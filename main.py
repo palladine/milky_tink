@@ -48,7 +48,7 @@ async def showtiles(request: Request, w: Worker = Depends(get_worker)):
     
     #TODO Real data (NOW are fictive params and filters)
     figis = ['BBG004731489', 'BBG004RVFCY3', 'TCS90A0JQUZ6']
-    filters = {'depth': 20, 'level_vol_bids': 1000, 'level_vol_asks': 1000}
+    filters = {'depth': 20, 'level_vol_bids': 3000, 'level_vol_asks': 3000}
     
     ts = [Task(service='MarketDataService', method='GetOrderBook', 
                 params={'instrumentId': figi, 'depth': filters['depth']}) for figi in figis]    
@@ -71,7 +71,7 @@ async def showtiles(request: Request, w: Worker = Depends(get_worker)):
                 bid_quantity = int(bids[i]['quantity'])
                 if bid_quantity >= filters.get('level_vol_bids', 0):
                     if bid_price not in prices:
-                        prices[bid_price] = {'ask': '-'}
+                        prices[bid_price] = {'ask': ''}
                 if bid_price in prices:
                     prices[bid_price].update({'bid': bid_quantity})
                 
@@ -80,17 +80,17 @@ async def showtiles(request: Request, w: Worker = Depends(get_worker)):
                 ask_quantity = int(asks[i]['quantity'])
                 if ask_quantity >= filters.get('level_vol_asks', 0):
                     if ask_price not in prices:
-                        prices[ask_price] = {'bid': '-'}
+                        prices[ask_price] = {'bid': ''}
                 if ask_price in prices:
                     prices[ask_price].update({'ask': ask_quantity})
 
 
         prices = dict(sorted(prices.items(), reverse=True))
         
-        for k in list(prices.keys()):
-            prices[f'{k:.2f}'] = prices.pop(k)
-        
         if prices:
+            for k in list(prices.keys()):
+                prices[f'{k:.2f}'] = prices.pop(k)
+
             instrument = {'figi': share['figi'],
                             'last_price': float(share['lastPrice']['units']) + (share['lastPrice']['nano'] / 1000000000),
                             'ticker': share['ticker'],

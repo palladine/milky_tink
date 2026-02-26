@@ -9,7 +9,7 @@
     <table>
         <tr>
             {% for instrument in instruments %}
-                <td style="text-align: center;">
+                <td style="text-align: center; vertical-align: top;">
                     <div>
                         {{ instrument.figi }}<br>
                         {{ instrument.last_price }}<br>
@@ -20,7 +20,6 @@
                         {{ instrument.depth }}<br>
                         <br>
 
-                        <br>
                             <table style="border: none; border-collapse: collapse; border-spacing: 0;">
                                     <th style="text-align: center;">bids</th>
                                     <th style="text-align: center;">price</th>
