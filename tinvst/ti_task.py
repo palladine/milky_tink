@@ -1,5 +1,4 @@
 class Task:
-
     def __init__(self, service, method, params=None):
         self.service = service
         self.method = method

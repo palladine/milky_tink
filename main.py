@@ -2,10 +2,17 @@ from fastapi import FastAPI, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from models import Tile
 from tinvst import Task, Worker
 import uvicorn
 from dotenv import load_dotenv
 import os
+import json
+import asyncio
+import time
+
+
+
 
 
 app = FastAPI()
@@ -14,13 +21,18 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 load_dotenv()
+
 worker = Worker(token=os.getenv('TOKEN'), url=os.getenv('SANDBOX_URL'))
+
 
 
 def get_worker():
     if worker is None:
         raise Exception("Worker not initialized")
     return worker
+
+
+
 
 
 
@@ -31,29 +43,22 @@ async def lead(request: Request):
 
 
 
-@app.get('/get_shares')
-async def getshares(w: Worker = Depends(get_worker)):
-    t = Task(service='InstrumentsService', method='Shares')
-    return await w.getResponse(t)
-
-
-
-@app.get('/show_shades')
-def showshades():
-    ...
-
 
 @app.get('/show_tiles')
 async def showtiles(request: Request, w: Worker = Depends(get_worker)):
     
     #TODO Real data (NOW are fictive params and filters)
-    figis = ['BBG004731489', 'BBG004RVFCY3', 'TCS90A0JQUZ6']
+    figis = ['BBG004731489', 'BBG004RVFCY3', 'TCS90A0JQUZ6']*3
     filters = {'depth': 20, 'level_vol_bids': 3000, 'level_vol_asks': 3000}
     
-    ts = [Task(service='MarketDataService', method='GetOrderBook', 
-                params={'instrumentId': figi, 'depth': filters['depth']}) for figi in figis]    
+    tasks = [
+            send_request(w, Task(service='MarketDataService', 
+                method='GetOrderBook', 
+                params={'instrumentId': figi, 'depth': filters['depth']}
+                ))
+                for figi in figis]
     
-    response: list = await w.getResponse(*ts)
+    response = await asyncio.gather(*tasks)
     
     # parsing response
     instruments = []
@@ -109,5 +114,88 @@ async def showtiles(request: Request, w: Worker = Depends(get_worker)):
 
 
 
+
+@app.get('/test_concurrency')
+async def test_concurrency():
+    '''
+        Тестовый эндпоинт для проверки конкурентности
+    '''
+    figis = ['BBG004731489', 'BBG004RVFCY3', 'TCS90A0JQUZ6'] * 33
+    filters = {'depth': 20}
+    
+    tasks = [
+        send_request(worker, Task(
+            service='MarketDataService',
+            method='GetOrderBook',
+            params={'instrumentId': figi, 'depth': filters['depth']}
+        ))
+        for figi in figis
+    ]
+    
+    start = time.time()
+    results = await asyncio.gather(*tasks)
+    total_time = time.time() - start
+    
+    return {
+        "total_time": total_time,
+        "count": len(results),
+        "results": results[:1]  # Возвращаем только 1 
+    }
+
+
+
+
+## методы для React
+## данные для запросов от React в теле запроса
+
+async def send_request(w: Worker, task: None | Task = None):
+    try:
+        response = await w.getResponse(task)
+        return json.loads(response.content.decode())
+    except Exception as e:
+        print(f"Error in send_request method: {e}")
+
+
+
+@app.post('/get_shares')
+async def get_shares(w: Worker = Depends(get_worker)):
+    '''
+        Метод получение списка акций. 
+    '''
+    service='InstrumentsService'
+    method='Shares'
+    task = send_request(w, Task(service=service, method=method))
+    result = await task
+    return result
+
+
+
+@app.post('/get_info_tile')
+async def get_info_tile(tile: Tile, w: Worker = Depends(get_worker)):
+    '''
+        Метод получение информации по стакану. 
+        Формирование плитки.
+    '''
+    # tile.id_tile - id плитки
+    
+    # Данные фиктивные
+    # TODO Получение реальных данных из БД
+    service = 'MarketDataService'
+    method='GetOrderBook'
+    instrumentId = 'TCS90A0JQUZ6' # figi, ticker_classCode
+    depth = 20
+
+    task = send_request(w, Task(service=service, method=method,
+                params={'instrumentId': instrumentId, 'depth': depth}))
+
+    result = await task
+    return result
+
+
+
+
+
+
 if __name__ == '__main__':
     uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True)
+    #asyncio.run(_test_async())
