@@ -6,6 +6,7 @@ import asyncio
 import time
 from tinvest import Task, Worker
 from .models import Tile
+from .db_models import Share
 from .db_worker import DBWorker
 
 
@@ -15,7 +16,13 @@ app = FastAPI()
 load_dotenv()
 
 worker = Worker(token=os.getenv('TOKEN'), url=os.getenv('SANDBOX_URL'))
-db_worker = DBWorker()
+db_worker = DBWorker(
+    db_user = os.getenv('DB_USER'),
+    db_pass = os.getenv('DB_PASSWORD'),
+    db_host = os.getenv('DB_HOST'),
+    db_port = os.getenv('DB_PORT'),
+    db_name = os.getenv('DB_NAME')
+)
 
 
 def get_worker():
@@ -23,6 +30,11 @@ def get_worker():
         raise Exception("Worker not initialized")
     return worker
 
+
+def get_db_worker():
+    if db_worker is None:
+        raise Exception("Worker not initialized")
+    return db_worker
 
 
 # @app.get('/show_tiles')
@@ -124,6 +136,12 @@ async def test_concurrency():
     }
 
 
+@app.get('/test_get')
+async def test_get(db_w: DBWorker = Depends(get_db_worker)):
+    result = await db_w._query(model='Share', method='add')
+    return result
+
+
 
 
 ## методы для React
@@ -139,7 +157,8 @@ async def send_request(w: Worker, task: None | Task = None):
 
 
 @app.post('/get_shares')
-async def get_shares(w: Worker = Depends(get_worker)):
+async def get_shares(w: Worker = Depends(get_worker),
+                    db_w: DBWorker = Depends(get_db_worker)):
     '''
         Метод получение списка акций. 
     '''
@@ -147,6 +166,26 @@ async def get_shares(w: Worker = Depends(get_worker)):
     method='Shares'
     task = send_request(w, Task(service=service, method=method))
     result = await task
+    
+    if result:
+        shares = result.get('instruments', None)
+
+        shares_list = []
+        for _share in shares:
+            new_share = Share(
+                    figi = _share.get('figi', None),
+                    ticker = _share.get('ticker', None),
+                    class_code = _share.get('classCode', None),
+                    lot = _share.get('lot', None),
+                    currency = _share.get('currency', None),
+                    name = _share.get('name', None),
+                    cor = _share.get('countryOfRisk', None),
+                    cor_name = _share.get('countryOfRiskName', None),
+                    sector = _share.get('sector', None)
+                )
+            shares_list.append(new_share)
+        return await db_w._add(model='Share', items=shares_list)
+
     return result
 
 
