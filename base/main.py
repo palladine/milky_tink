@@ -10,7 +10,6 @@ from .db_models import Share
 from .db_worker import DBWorker
 
 
-
 app = FastAPI()
 
 load_dotenv()
@@ -138,7 +137,7 @@ async def test_concurrency():
 
 @app.get('/test_get')
 async def test_get(db_w: DBWorker = Depends(get_db_worker)):
-    result = await db_w._query(model='Share', method='add')
+    result = await db_w._get_one(model='Share', filters={'id': 1})
     return result
 
 

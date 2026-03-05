@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-
+from sqlalchemy import select
 
 
 def connect(func):
@@ -28,9 +28,17 @@ class DBWorker:
 
 
     @connect
-    async def _get(self, model, session=None, **filter_params):
-        return f'We are in "_get" method DBWorker with "{model}"!'
+    async def _get_one(self, model, session=None, **filters):
+        stmt = select(model).filter_by(**filters)
+        result = await session.execute(stmt)
+        return result.scalar_one_or_none()
         
+
+    @connect
+    async def _get_all(self, model, session=None, **filters):
+        
+        return f'We are in "_get" method DBWorker with "{model}"!'
+
 
     @connect
     async def _add(self, model, items=None, session=None):
