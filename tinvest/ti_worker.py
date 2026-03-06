@@ -14,10 +14,15 @@ class Worker:
 
 
     async def getResponse(self, task):
-        async with httpx.AsyncClient(verify=False) as client:
-            response = await client.post(f'{self.url}.{task.service}/{task.method}',
-                                    headers=self.headers, json=task.data)
-            return response
+        response = None
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                response = await client.post(f'{self.url}.{task.service}/{task.method}',
+                                        headers=self.headers, json=task.data)
+        except Exception as e:
+            print(f"Error: {e}, Response: {response}")
+        return response
+        
 
 
 
