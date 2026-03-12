@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Body
 from dotenv import load_dotenv
 import os
 import json
 import asyncio
 import time
 from tinvest import Task, Worker
-from .db_models import Share
+from .db_models import Share, Tile
 from .db_worker import DBWorker
 
 
@@ -78,7 +78,7 @@ async def test_get(db_w: DBWorker = Depends(get_db_worker)):
     '''
         Тест получения списка записей по фильтру
     '''
-    result = await db_w._get(model=Share, filters={'id__gte': 1000, 'id__lt': 1005})
+    result = await db_w._get(model=Share, filters={'id': 552})
     return result
 
 
@@ -136,6 +136,39 @@ async def get_shares(w: Worker = Depends(get_worker),
         return await db_w._add(items=shares_list)
 
     return result
+
+
+
+@app.post('/get_tiles')
+async def get_tiles(db_w: DBWorker = Depends(get_db_worker)):
+    '''
+        Метод получение списка плиток. 
+    '''
+    result = await db_w._get(model=Tile)
+    return result
+
+
+
+@app.post('/add_tile')
+async def add_tile(datas: dict = Body(...),
+                    db_w: DBWorker = Depends(get_db_worker)):
+    
+    id_share = datas.get('id_share', None)
+    num_cell = datas.get('num_cell', None)
+    period_upd = datas.get('period_upd', None)
+    limit = datas.get('limit', None)
+
+    share = await db_w._get_one(model=Share, filters={'id': id_share})
+    
+    new_tile = Tile(
+        share_id=id_share,
+        share=share,
+        period_upd=period_upd,
+        limit=limit,
+        num_cell=num_cell
+    )
+
+    return await db_w._add(items=[new_tile])
 
 
 
