@@ -1,5 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import select, delete
+from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import selectinload
 
 
 def connect(func):
@@ -68,7 +70,15 @@ class DBWorker:
         if session:
             if not filters:
                 filters = {}
+
+            mapper = inspect(model)
+            relats = mapper.relationships
             stmt = select(model).filter_by(**filters)
+
+            for relat in relats:
+                relat_attr = getattr(model, relat.key)
+                stmt = stmt.options(selectinload(relat_attr))
+
             result = await session.execute(stmt)
             return result.scalar_one_or_none()
         
@@ -78,8 +88,16 @@ class DBWorker:
         if session:
             if not filters:
                 filters = {}
+            
+            mapper = inspect(model)
+            relats = mapper.relationships
             _filters: list = FilterParser.parse(model, filters)
             stmt = select(model).filter(*_filters)
+
+            for relat in relats:
+                relat_attr = getattr(model, relat.key)
+                stmt = stmt.options(selectinload(relat_attr))
+
             result = await session.execute(stmt)
             return result.scalars().all()
 

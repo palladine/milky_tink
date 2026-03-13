@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, Body
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 import json
@@ -12,6 +13,20 @@ from .db_worker import DBWorker
 app = FastAPI()
 
 load_dotenv()
+
+
+allowed_hosts = os.getenv('ALLOWED_HOSTS')
+allowed_hosts = [h.strip() for h in allowed_hosts.split(',') if h.strip()] if allowed_hosts else ['*']
+allowed_hosts = allowed_hosts if allowed_hosts else ['*']
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_hosts,        # List of allowed origins
+    allow_credentials=True,             # Allow cookies, authorization headers, etc.
+    allow_methods=['GET', 'POST'],      # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],                # Allow all headers
+)
+
+
 
 worker = Worker(token=os.getenv('TOKEN'), url=os.getenv('SANDBOX_URL'))
 db_worker = DBWorker(
@@ -69,7 +84,7 @@ async def test_get_one(db_w: DBWorker = Depends(get_db_worker)):
     '''
         Тест получения одной записи по фильтру
     '''
-    result = await db_w._get_one(model=Share, filters={'id': 1})
+    result = await db_w._get_one(model=Tile, filters={'id': 1})
     return result
 
 
@@ -87,9 +102,10 @@ async def test_delete(db_w: DBWorker = Depends(get_db_worker)):
     '''
         Тест удаления списка записей по фильтру
     '''
-    result = await db_w._delete(model=Share, filters={'id__gte': 1})
+    result = await db_w._delete(model=Share, filters={'id__gte': 1911})
     return result
 
+# -----------------------------------------------------------------------------------
 
 
 ## методы для React
@@ -105,11 +121,11 @@ async def send_request(w: Worker, task: None | Task = None):
 
 
 
-@app.get('/get_shares')
-async def get_shares(w: Worker = Depends(get_worker),
+@app.post('/get_api_shares')
+async def get_api_shares(w: Worker = Depends(get_worker),
                     db_w: DBWorker = Depends(get_db_worker)):
     '''
-        Метод получение списка акций. 
+        Метод получение списка акций от API и занесение в БД. 
     '''
     service='InstrumentsService'
     method='Shares'
@@ -139,6 +155,16 @@ async def get_shares(w: Worker = Depends(get_worker),
 
 
 
+@app.post('/get_shares')
+async def get_shares(db_w: DBWorker = Depends(get_db_worker)):
+    '''
+        Метод получения списка акций.
+    '''
+    result = await db_w._get(model=Share)
+    return result
+
+
+
 @app.post('/get_tiles')
 async def get_tiles(db_w: DBWorker = Depends(get_db_worker)):
     '''
@@ -152,7 +178,9 @@ async def get_tiles(db_w: DBWorker = Depends(get_db_worker)):
 @app.post('/add_tile')
 async def add_tile(datas: dict = Body(...),
                     db_w: DBWorker = Depends(get_db_worker)):
-    
+    '''
+        Метод добавления плитки в БД.
+    '''
     id_share = datas.get('id_share', None)
     num_cell = datas.get('num_cell', None)
     period_upd = datas.get('period_upd', None)
@@ -192,4 +220,5 @@ async def get_info_tile(id_tile: int, w: Worker = Depends(get_worker)):
 
     result = await task
     return result
+
 
