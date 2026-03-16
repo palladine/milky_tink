@@ -95,7 +95,6 @@ class DBWorker:
             stmt = select(model).filter(*_filters)
             
             if order_fields:
-                print(order_fields)
                 stmt = stmt.order_by(*[getattr(model, field) for field in order_fields])
 
             for relat in relats:
