@@ -196,29 +196,66 @@ async def add_tile(datas: dict = Body(...),
         num_cell=num_cell
     )
 
-    return await db_w._add(items=[new_tile])
+    await db_w._add(items=[new_tile])
+    return True
+
+
+
+@app.post('/remove_tile')
+async def remove_tile(datas: dict = Body(...), 
+                    db_w: DBWorker = Depends(get_db_worker)):
+    '''
+        Метод удаления плитки из БД.
+    '''
+    num_cell = datas.get('num_cell', None)
+    res = await db_w._delete(model=Tile, filters={'num_cell': num_cell})
+    return res
 
 
 
 @app.post('/get_info_tile')
-async def get_info_tile(id_tile: int, w: Worker = Depends(get_worker)):
+async def get_info_tile(datas: dict = Body(...), 
+                        w: Worker = Depends(get_worker),
+                        db_w: DBWorker = Depends(get_db_worker)):
     '''
         Метод получение информации по стакану. 
         Формирование плитки.
     '''
-    # tile.id_tile - id плитки
-    
-    # Данные фиктивные
-    # TODO Получение реальных данных из БД
+    num_cell = datas.get('num_cell', None)
+    tile = await db_w._get_one(model=Tile, filters={'num_cell': num_cell})
+
     service = 'MarketDataService'
     method='GetOrderBook'
-    instrumentId = 'TCS90A0JQUZ6' # figi, ticker_classCode
+    instrumentId = tile.share.figi  # figi, ticker_classCode
     depth = 20
 
     task = send_request(w, Task(service=service, method=method,
                 params={'instrumentId': instrumentId, 'depth': depth}))
 
     result = await task
-    return result
+    
+    # filters
+    mx_volume = 0
+    price = 0
+    state = ''
+
+    bids = result.get('bids', None)
+    asks = result.get('asks', None)
+
+    if bids and asks:
+        for bid in bids:
+            volume = int(bid['quantity'])
+            if volume >= mx_volume:
+                mx_volume = volume
+                price = float(bid['price']['units']) + (int(bid['price']['nano']) / 1000000000)
+                state = 'bid'
+        for ask in asks:
+            volume = int(ask['quantity'])
+            if volume >= mx_volume:
+                mx_volume = volume
+                price = float(ask['price']['units']) + (int(ask['price']['nano']) / 1000000000)
+                state = 'ask'
+
+    return {'vol': mx_volume, 'price': f'{price:.2f}', 'state': state}
 
 
