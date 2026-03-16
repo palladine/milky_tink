@@ -84,7 +84,7 @@ class DBWorker:
         
 
     @connect
-    async def _get(self, model, session=None, filters=None):
+    async def _get(self, model, session=None, filters=None, order_fields: list[str]|None = None):
         if session:
             if not filters:
                 filters = {}
@@ -93,6 +93,10 @@ class DBWorker:
             relats = mapper.relationships
             _filters: list = FilterParser.parse(model, filters)
             stmt = select(model).filter(*_filters)
+            
+            if order_fields:
+                print(order_fields)
+                stmt = stmt.order_by(*[getattr(model, field) for field in order_fields])
 
             for relat in relats:
                 relat_attr = getattr(model, relat.key)

@@ -160,7 +160,7 @@ async def get_shares(db_w: DBWorker = Depends(get_db_worker)):
     '''
         Метод получения списка акций.
     '''
-    result = await db_w._get(model=Share)
+    result = await db_w._get(model=Share, order_fields=['ticker'])
     return result
 
 
