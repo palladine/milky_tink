@@ -1,7 +1,7 @@
 export default function CellTile({ children, isOccupied }) {
     
     return (
-    <div >
+    <div>
         {children}
     </div>
     );

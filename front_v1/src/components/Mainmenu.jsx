@@ -9,8 +9,16 @@ export default function Mainmenu({ setActiveComponent }) {
     return (
         <div>
     
-            <section>
+            <section
+                style={{
+                    display: 'flex',
+                    gap: '3px'
+                }}
+            >
                 
+                <div>
+                    <button onClick={(e) => handleClick(e, 'tiles_search')}>Плитки (поиск)</button>
+                </div>
                 <div>
                     <button onClick={(e) => handleClick(e, 'tiles')}>Плитки</button>
                 </div>

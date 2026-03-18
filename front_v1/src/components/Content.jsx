@@ -10,6 +10,8 @@ export default function Content({ activeComponent }) {
                 return <Home />;
             case 'tiles':
                 return <GridTableTiles />;
+            case 'tiles_search':
+                return <Home />
             default:
                 return <Home />;
         }

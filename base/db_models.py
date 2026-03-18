@@ -48,6 +48,7 @@ class Tile(Model):
     share: Mapped["Share"] = relationship(back_populates="tiles")
     period_upd: Mapped[float]
     limit: Mapped[int]
+    depth: Mapped[int]
     num_cell: Mapped[int] = mapped_column(unique=True)
 
 

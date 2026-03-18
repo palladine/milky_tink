@@ -1,7 +1,6 @@
 import httpx
 
 
-
 class Worker:
     def __init__(self, token, url):
         self.url = url
@@ -11,7 +10,6 @@ class Worker:
                 'Accept': 'application/json',
                 'Authorization': f'Bearer {self.token}'
             }
-
 
     async def getResponse(self, task):
         response = None

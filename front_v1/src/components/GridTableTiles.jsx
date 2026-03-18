@@ -93,7 +93,7 @@ export default function GridTableTiles() {
         const share_id = parseInt(formData.get('sel_share'));
         const period_upd = parseFloat(formData.get('period_upd'));
         const limit = parseInt(formData.get('limit'));
-
+        const depth = parseInt(formData.get('depth'))
 
         // Ищем свободную ячейку
         const emptyCell = findFirstEmptyCell(cells);
@@ -112,7 +112,8 @@ export default function GridTableTiles() {
                 id_share: share_id,
                 num_cell: calc_num_cell,
                 period_upd: period_upd,
-                limit: limit
+                limit: limit,
+                depth: depth
             });
 
             // После успешного добавления обновляем плитки
@@ -184,7 +185,12 @@ export default function GridTableTiles() {
 
     return (
         <div>
-            <section>
+            <section
+                style={{
+                    display: 'flex',
+                    gap: '3px'
+                }}
+            >
                 
                     <button onClick={toggleVisibleAddFormTile}>
                         Новая плитка
@@ -214,10 +220,13 @@ export default function GridTableTiles() {
                                 </select>
 
                                 <label htmlFor="period_upd">Интервал обновления (сек)</label>
-                                <input name="period_upd" type="number" />
+                                <input name="period_upd" type="number" step="0.1" />
                                 
                                 <label htmlFor="limit">Лимит (объем)</label>
-                                <input name="limit" type="number" />
+                                <input name="limit" type="number" step='100' />
+
+                                <label htmlFor="depth">Глубина стакана</label>
+                                <input name="depth" type="number" />
                             
                                 <button type='submit'>Добавить</button>
                                 <button onClick={toggleVisibleAddFormTile}>X</button>
@@ -229,15 +238,26 @@ export default function GridTableTiles() {
 
             {/* Таблица 10x10 */}
             <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(10, 100px)',
-                gap: '3px',
+                margin: '10px 0px', 
+                //display: 'grid',
+                //gridTemplateColumns: 'repeat(10, 1fr)',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '5px'
                 }}>
                 
                 {cells.map((row, rowIndex) => (
                     row.map((cell, colIndex) => {
                         return (
-                            <section key={`${rowIndex}-${colIndex}`}>
+                            <section key={`${rowIndex}-${colIndex}`}
+                                style={{
+                                    border: '1px solid #c0c0c077',
+                                    height: '23px',
+                                    width: '170px'
+                                }}
+                            >
                                     <CellTile
                                         isOccupied={cell !== null}
                                     >

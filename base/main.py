@@ -5,7 +5,7 @@ import os
 import json
 import asyncio
 import time
-from tinvest import Task, Worker
+from tinvest import Task, Worker, utils
 from .db_models import Share, Tile
 from .db_worker import DBWorker
 
@@ -56,8 +56,8 @@ async def test_concurrency(w: Worker = Depends(get_worker)):
     '''
         Тестовый эндпоинт для проверки конкурентности
     '''
-    figis = ['BBG004731489', 'BBG004RVFCY3', 'TCS90A0JQUZ6'] * 33
-    filters = {'depth': 20}
+    figis = ['BBG004731489'] * 100
+    filters = {'depth': 10}
     
     tasks = [
         send_request(w, Task(
@@ -110,7 +110,6 @@ async def test_delete(db_w: DBWorker = Depends(get_db_worker)):
 
 ## методы для React
 ## данные для запросов от React в теле запроса
-
 async def send_request(w: Worker, task: None | Task = None):
     response = None
     try:
@@ -185,6 +184,7 @@ async def add_tile(datas: dict = Body(...),
     num_cell = datas.get('num_cell', None)
     period_upd = datas.get('period_upd', None)
     limit = datas.get('limit', None)
+    depth = datas.get('depth', None)
 
     share = await db_w._get_one(model=Share, filters={'id': id_share})
     
@@ -193,7 +193,9 @@ async def add_tile(datas: dict = Body(...),
         share=share,
         period_upd=period_upd,
         limit=limit,
+        depth=depth,
         num_cell=num_cell
+
     )
 
     await db_w._add(items=[new_tile])
@@ -227,7 +229,7 @@ async def get_info_tile(datas: dict = Body(...),
     service = 'MarketDataService'
     method='GetOrderBook'
     instrumentId = tile.share.figi  # figi, ticker_classCode
-    depth = 20
+    depth = tile.depth
 
     task = send_request(w, Task(service=service, method=method,
                 params={'instrumentId': instrumentId, 'depth': depth}))
