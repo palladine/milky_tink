@@ -11,12 +11,14 @@ class Worker:
                 'Authorization': f'Bearer {self.token}'
             }
 
+        self.client = httpx.AsyncClient(verify=False)
+
+
     async def getResponse(self, task):
         response = None
         try:
-            async with httpx.AsyncClient(verify=False) as client:
-                response = await client.post(f'{self.url}.{task.service}/{task.method}',
-                                        headers=self.headers, json=task.data)
+            response = await self.client.post(f'{self.url}.{task.service}/{task.method}',
+                                    headers=self.headers, json=task.data)
         except Exception as e:
             print(f"Error: {e}, Response: {response}")
         return response
