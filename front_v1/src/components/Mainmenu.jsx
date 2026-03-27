@@ -19,6 +19,7 @@ export default function Mainmenu({ setActiveComponent }) {
                 <div>
                     <button onClick={(e) => handleClick(e, 'tiles_search')}>Плитки (поиск)</button>
                 </div>
+                
                 <div>
                     <button onClick={(e) => handleClick(e, 'tiles')}>Плитки</button>
                 </div>

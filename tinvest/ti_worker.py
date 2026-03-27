@@ -11,18 +11,23 @@ class Worker:
                 'Authorization': f'Bearer {self.token}'
             }
 
-        self.client = httpx.AsyncClient(verify=False)
+        self.client = httpx.AsyncClient(headers=self.headers, verify=False)
+
+
+    async def close(self):
+        await self.client.aclose()
 
 
     async def getResponse(self, task):
         response = None
         try:
-            response = await self.client.post(f'{self.url}.{task.service}/{task.method}',
-                                    headers=self.headers, json=task.data)
+            response = await self.client.post(f'{self.url}.{task.service}/{task.method}', 
+                                            json=task.data, timeout=1)
         except Exception as e:
-            print(f"Error: {e}, Response: {response}")
-        return response
-        
+            ...
+        return (response, task.extras)  # кортеж (ответ, доп. инфа задачи)
+    
+
 
 
 

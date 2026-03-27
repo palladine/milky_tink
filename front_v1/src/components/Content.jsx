@@ -1,5 +1,6 @@
 import Home from "./Home";
-import GridTableTiles from "./GridTableTiles";
+import GridTiles from "./GridTiles"
+
 
 
 export default function Content({ activeComponent }) {
@@ -9,7 +10,7 @@ export default function Content({ activeComponent }) {
             case 'home':
                 return <Home />;
             case 'tiles':
-                return <GridTableTiles />;
+                return <GridTiles />;
             case 'tiles_search':
                 return <Home />
             default:

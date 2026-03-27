@@ -110,19 +110,41 @@ async def test_delete(db_w: DBWorker = Depends(get_db_worker)):
 
 ## методы для React
 ## данные для запросов от React в теле запроса
-async def send_request(w: Worker, task: None | Task = None):
+async def send_request(w: Worker, task: Task | None = None):
     response = None
     try:
-        response = await w.getResponse(task)
-        return json.loads(response.content.decode())
+        r = await w.getResponse(task)
+        response = json.loads(r.content.decode())
     except Exception as e:
         print(f"Error in send_request method: {e}")
+    return response
+
+
+
+async def send_requests(w: Worker, 
+                        tasks: list[Task] | None = None,
+                        max_active_tasks: int = 5):
+    semaphore = asyncio.Semaphore(max_active_tasks)
+    
+    response = None
+    try:
+        worker_tasks = [w.getResponse(task) for task in tasks]
+        worker_response = await asyncio.gather(*worker_tasks)
+
+        response = [(json.loads(resp.content.decode()), extras)
+                    for resp, extras in worker_response if resp is not None]
+
+    except Exception as e:
+        print(f"Error in send_requests method: {e}")
+    return response
+
 
 
 
 @app.post('/get_api_shares')
 async def get_api_shares(w: Worker = Depends(get_worker),
-                    db_w: DBWorker = Depends(get_db_worker)):
+                    db_w: DBWorker = Depends(get_db_worker),
+                    filters=None):
     '''
         Метод получение списка акций от API и занесение в БД. 
     '''
@@ -132,6 +154,9 @@ async def get_api_shares(w: Worker = Depends(get_worker),
     result = await task
     
     if result:
+        if not filters:
+            filters = {}
+        
         shares = result.get('instruments', None)
 
         shares_list = []
@@ -215,13 +240,12 @@ async def remove_tile(datas: dict = Body(...),
 
 
 
-@app.post('/get_info_tile')
-async def get_info_tile(datas: dict = Body(...), 
+@app.post('/get_orderbook_tile')
+async def get_orderbook_tile(datas: dict = Body(...), 
                         w: Worker = Depends(get_worker),
                         db_w: DBWorker = Depends(get_db_worker)):
     '''
         Метод получение информации по стакану. 
-        Формирование плитки.
     '''
     num_cell = datas.get('num_cell', None)
     tile = await db_w._get_one(model=Tile, filters={'num_cell': num_cell})
@@ -236,28 +260,62 @@ async def get_info_tile(datas: dict = Body(...),
 
     result = await task
     
-    # filters
     mx_volume = 0
     price = 0
     state = ''
 
-    bids = result.get('bids', None)
-    asks = result.get('asks', None)
-
-    if bids and asks:
-        for bid in bids:
-            volume = int(bid['quantity'])
+    for side in ['bids', 'asks']:
+        items = result.get(side, None)
+        for item in items:
+            volume = int(item['quantity'])
             if volume >= mx_volume:
                 mx_volume = volume
-                price = float(bid['price']['units']) + (int(bid['price']['nano']) / 1000000000)
-                state = 'bid'
-        for ask in asks:
-            volume = int(ask['quantity'])
-            if volume >= mx_volume:
-                mx_volume = volume
-                price = float(ask['price']['units']) + (int(ask['price']['nano']) / 1000000000)
-                state = 'ask'
+                price = float(item['price']['units']) + (int(item['price']['nano']) / 1000000000)
+                state = side[:-1]
 
     return {'vol': mx_volume, 'price': f'{price:.2f}', 'state': state}
 
 
+
+@app.post('/get_orderbook_tiles')
+async def get_orderbook_tiles(datas: dict = Body(...),
+                        w: Worker = Depends(get_worker),
+                        db_w: DBWorker = Depends(get_db_worker)):
+    '''
+        Метод получение информации по стаканам.
+    '''
+
+    nums_cells = datas.get('nums_cells', None)
+
+    tiles = await db_w._get(model=Tile, filters={'num_cell__in': nums_cells})
+
+    service = 'MarketDataService'
+    method='GetOrderBook'
+
+    back_tasks = [Task(service=service, method=method,
+                params={'instrumentId': tile.share.figi, 'depth': tile.depth},
+                extras={'num_cell': tile.num_cell}) 
+                for tile in tiles]
+
+    back_results = await send_requests(w, back_tasks)
+
+    #
+    results = {}
+    for back_result in back_results:
+        mx_volume = 0
+        price = 0
+        state = ''
+
+        for side in ['bids', 'asks']:
+            items = back_result[0].get(side, None)
+            for item in items:
+                volume = int(item['quantity'])
+                if volume >= mx_volume:
+                    mx_volume = volume
+                    price = float(item['price']['units']) + (int(item['price']['nano']) / 1000000000)
+                    state = side[:-1]
+
+        results.update({back_result[1].get('num_cell'): 
+                        {'vol': mx_volume, 'price': f'{price:.2f}', 'state': state}})
+    
+    return results

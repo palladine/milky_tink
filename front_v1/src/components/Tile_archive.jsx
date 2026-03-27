@@ -29,7 +29,7 @@ export default function Tile({data, onRemove}) {
                 }
             } finally {
                 if (isMounted) {
-                    timeoutId = setTimeout(fetchData, 1000);
+                    timeoutId = setTimeout(fetchData, period);
                 }
             }
         };

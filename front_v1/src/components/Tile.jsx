@@ -1,49 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-
-
-export default function Tile({data, onRemove}) {
-
-    const [tileData, setTileData] = useState(null);
-    
-    const period = parseInt(data.period_upd) * 1000; 
-
-    useEffect(() => {
-        let isMounted = true;
-        let timeoutId = null;
-    
-        const fetchData = async () => {
-            try {
-                const response = await axios.post(
-                    'http://127.0.0.1:8000/get_info_tile', 
-                    { num_cell: data.num_cell }, 
-                    { timeout: period }
-                );
-                
-                if (isMounted) {
-                    setTileData(response.data);
-                }
-            } catch (err) {
-                if (isMounted) {
-                    console.log(err.message);
-                }
-            } finally {
-                if (isMounted) {
-                    timeoutId = setTimeout(fetchData, 500);
-                }
-            }
-        };
-
-        fetchData();
-
-        return () => {
-            isMounted = false;
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, []);
-
+export default function Tile({share_datas, cell_datas, onRemove}) {
 
     return (
         
@@ -53,32 +8,28 @@ export default function Tile({data, onRemove}) {
             justifyContent: 'space-around',
             alignItems: 'center'
         }}>
-            {tileData ? (
                 <section
                     style={{
-                        border: '1px solid #aaaaaa',
-                        backgroundColor: tileData.vol >= data.limit ? tileData.state === 'bid' ? '#ffcbcbd8' : '#a9ffa9e0' : '#eeeeee77',
-                        transition: 'all 0.3s',
+                        backgroundColor: share_datas.vol >= cell_datas.limit ? share_datas.state === 'bid' ? '#ffcbcbd8' : '#a9ffa9e0' : '#eeeeee77',
+                        transition: 'all 0.6s',
                         display: 'flex',
                         flexDirection: 'row',
                         alignItems: 'center',
                         width: '170px',
                         height: '23px',
                         flexBasis: '170px',
-                        justifyContent: 'space-around',
-                        margin: '-1px',
-                        
+                        justifyContent: 'space-around'
                     }}
                 >
-                    <div>{data.share.ticker}</div>
-                    <div><b>{tileData.price}</b></div> 
-                    <div>{tileData.vol}</div>
+                    <div>{cell_datas.share.ticker}</div>
+                    <div><b>{share_datas.price}</b></div> 
+                    <div>{share_datas.vol}</div>
                     
                     <div>
                         <a href="#" onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            onRemove(data.num_cell);
+                            onRemove(cell_datas.num_cell);
                         }}
                         style={{
                             textDecoration: 'none',
@@ -89,9 +40,6 @@ export default function Tile({data, onRemove}) {
                         </a>
                     </div>
                 </section>
-            ) : (
-                <div>...</div>
-            )}
         </div>
 
     )

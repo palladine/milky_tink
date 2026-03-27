@@ -8,11 +8,8 @@ import axios from "axios"
 export default function GridTableTiles() {
 
     const [isVisibleAddFormTile, setIsVisibleAddFormTile] = useState(false);
-    // form fields
     const [selectedShare, setSelectedShare] = useState('');
-    // Состояние для хранения компонентов в ячейках
     const [cells, setCells] = useState(() => {
-        // Создаем матрицу 10x10, заполненную null
         return Array(10).fill().map(() => Array(10).fill(null));
     });
 
@@ -40,7 +37,6 @@ export default function GridTableTiles() {
         try {
             const res = await axios.post("http://127.0.0.1:8000/get_tiles", {});
             
-            // Создаем новую матрицу на основе response
             const newMatrix = Array(10).fill().map(() => Array(10).fill(null));
             if (Array.isArray(res.data)) {
                 res.data.forEach((value, index) => {
@@ -122,10 +118,8 @@ export default function GridTableTiles() {
             // Закрываем форму
             //setIsVisibleAddFormTile(false);
             
-            // Сбрасываем выбранный инструмент
             setSelectedShare('');
             
-            // Сбрасываем форму
             form.reset();
 
         } catch (err) {
@@ -139,7 +133,7 @@ export default function GridTableTiles() {
 
 
     // Функция для удаления компонента
-    const removeComponent = useCallback(async (num_cell) => {
+    const removeTile = useCallback(async (num_cell) => {
         
         // Отправляем запрос на удаление
         await axios.post("http://127.0.0.1:8000/remove_tile", {
@@ -180,8 +174,6 @@ export default function GridTableTiles() {
         handleResponseTiles();
         handleResponseShares();
     }, []);
-
-
 
     return (
         <div>
@@ -265,7 +257,7 @@ export default function GridTableTiles() {
                                         cell && (
                                         <Tile
                                             data={cell}
-                                            onRemove={removeComponent}
+                                            onRemove={removeTile}
                                         />)
                                     }
                                     </CellTile>

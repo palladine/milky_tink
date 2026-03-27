@@ -1,8 +1,9 @@
 class Task:
-    def __init__(self, service, method, params=None):
+    def __init__(self, service, method, params=None, extras=None):
         self.service = service
         self.method = method
         self.params = params if params else {}
+        self.extras = extras      # дополнительные параметры
 
         try:
             self.data = getattr(self, f'setParams{self.method}')(**self.params)

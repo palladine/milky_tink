@@ -48,7 +48,6 @@ class FilterParser:
                     op_func = cls.OPERATORS[op_name]
                     conditions.append(op_func(field, value))
             else:
-                # Простое равенство если нет оператора
                 if hasattr(model, key):
                     conditions.append(getattr(model, key) == value)
         
