@@ -22,7 +22,7 @@ class Worker:
         response = None
         try:
             response = await self.client.post(f'{self.url}.{task.service}/{task.method}', 
-                                            json=task.data, timeout=1)
+                                            json=task.data)
         except Exception as e:
             ...
         return (response, task.extras)  # кортеж (ответ, доп. инфа задачи)

@@ -12,7 +12,19 @@ export default function GridTiles() {
     const [curnums, setCurnums] = useState([]);
     const [infoorderbooks, setInfoorderbooks] = useState({});
     const [isFormAddTile, setFormAddTile] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [selectedShare, setSelectedShare] = useState('');
+    const [shares, setShares] = useState([]);
 
+    const GetShares = async () => {
+        try {
+            const res = await axios.post("http://127.0.0.1:8000/get_shares", {});
+            setShares(res.data);
+        }
+        catch (err) {
+            console.error(err);
+        }
+    };
 
     // информация о плитках из БД + занесение ее в ячейки 
     const GetTiles = async () => {
@@ -37,6 +49,81 @@ export default function GridTiles() {
             }
     };
     
+
+    // Функция для поиска первой свободной ячейки
+    const findFirstEmptyCell = (currentCells) => {
+        for (let row = 0; row < 10; row++) {
+            for (let col = 0; col < 10; col++) {
+                if (currentCells[row][col] === null) {
+                    return { row, col };
+                }
+            }
+        }
+        return null;
+    };
+
+
+    const ChangeShare = (event) => {
+        setSelectedShare(event.target.value);
+    };
+
+
+    // Добавление плитки 
+    const addTile = useCallback(async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Предотвращаем множественные запросы
+        if (isLoading) return;
+        setIsLoading(true);
+
+        // Сохраняем данные формы до асинхронных операций
+        const form = e.currentTarget;
+        const formData = new FormData(form);
+        const share_id = parseInt(formData.get('sel_share'));
+        const period_upd = parseFloat(formData.get('period_upd'));
+        const limit = parseInt(formData.get('limit'));
+        const depth = parseInt(formData.get('depth'))
+
+        // Ищем свободную ячейку
+        const emptyCell = findFirstEmptyCell(cells);
+        
+        if (!emptyCell) {
+            alert('No free cell!');
+            setIsLoading(false);
+            return;
+        }
+
+        const { row, col } = emptyCell;
+        const calc_num_cell = row * 10 + col;
+
+        try {
+            await axios.post("http://127.0.0.1:8000/add_tile", {
+                id_share: share_id,
+                num_cell: calc_num_cell,
+                period_upd: period_upd,
+                limit: limit,
+                depth: depth
+            });
+
+            // После успешного добавления обновляем плитки
+            await GetTiles();
+            
+            // Закрываем форму
+            //setFormAddTile(false);
+            
+            setSelectedShare('');
+            
+            form.reset();
+
+        } catch (err) {
+            console.error('Error adding tile:', err);
+        } finally {
+            setIsLoading(false);
+        }
+
+    }, [cells, isLoading]);
+
 
 
     // Функция для удаления плитки
@@ -72,6 +159,7 @@ export default function GridTiles() {
 
     useEffect(() => {
         GetTiles();
+        GetShares();
     }, []);
     
     
@@ -95,7 +183,7 @@ export default function GridTiles() {
                 }
             } finally {
                 if (isMounted) {
-                    timeoutId = setTimeout(getInfoOrderBooks, 700);
+                    timeoutId = setTimeout(getInfoOrderBooks, 1000);
                 }
             }
         };
@@ -134,6 +222,40 @@ export default function GridTiles() {
                     </button>
             </section>
 
+
+            {isFormAddTile && (
+                    <section>
+                        
+                            <form onSubmit={addTile} action="#" method="POST">
+                                
+                                <label htmlFor="sel_share">Выбор иструмента</label>
+                                <select type="text" name="sel_share" 
+                                    value={selectedShare} 
+                                    onChange={ChangeShare}>
+                                    <option value="">---</option>
+                                    {shares.map((option, index) => (
+                                        <option key={index} value={option.id}>
+                                            {`[${option.ticker}] ${option.name}`}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <label htmlFor="period_upd">Интервал обновления (сек)</label>
+                                <input name="period_upd" type="number" step="0.1" />
+                                
+                                <label htmlFor="limit">Лимит (объем)</label>
+                                <input name="limit" type="number" step='100' />
+
+                                <label htmlFor="depth">Глубина стакана</label>
+                                <input name="depth" type="number" />
+                            
+                                <button type='submit'>Добавить</button>
+                                <button onClick={toggleFormAddTile}>X</button>
+                            </form>
+
+                    </section>
+                )
+            }
 
 
             {/* таблица */}

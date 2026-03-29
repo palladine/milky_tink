@@ -113,7 +113,7 @@ async def test_delete(db_w: DBWorker = Depends(get_db_worker)):
 async def send_request(w: Worker, task: Task | None = None):
     response = None
     try:
-        r = await w.getResponse(task)
+        r, extras = await w.getResponse(task)
         response = json.loads(r.content.decode())
     except Exception as e:
         print(f"Error in send_request method: {e}")
@@ -124,7 +124,7 @@ async def send_request(w: Worker, task: Task | None = None):
 async def send_requests(w: Worker, 
                         tasks: list[Task] | None = None,
                         max_active_tasks: int = 5):
-    semaphore = asyncio.Semaphore(max_active_tasks)
+    # semaphore = asyncio.Semaphore(max_active_tasks)
     
     response = None
     try:
@@ -259,7 +259,7 @@ async def get_orderbook_tile(datas: dict = Body(...),
                 params={'instrumentId': instrumentId, 'depth': depth}))
 
     result = await task
-    
+
     mx_volume = 0
     price = 0
     state = ''

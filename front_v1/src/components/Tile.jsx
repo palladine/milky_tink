@@ -10,7 +10,7 @@ export default function Tile({share_datas, cell_datas, onRemove}) {
         }}>
                 <section
                     style={{
-                        backgroundColor: share_datas.vol >= cell_datas.limit ? share_datas.state === 'bid' ? '#ffcbcbd8' : '#a9ffa9e0' : '#eeeeee77',
+                        backgroundColor: share_datas.vol >= cell_datas.limit ? share_datas.state === 'ask' ? '#ffcbcbd8' : '#a9ffa9e0' : '#eeeeee77',
                         transition: 'all 0.6s',
                         display: 'flex',
                         flexDirection: 'row',
