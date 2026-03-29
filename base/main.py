@@ -46,8 +46,51 @@ def get_worker():
 
 def get_db_worker():
     if db_worker is None:
-        raise Exception("Worker not initialized")
+        raise Exception("DB Worker not initialized")
     return db_worker
+
+
+
+# system methods
+@app.get('/get_api_shares')
+async def get_api_shares(w: Worker = Depends(get_worker),
+                    db_w: DBWorker = Depends(get_db_worker),
+                    filters=None):
+    '''
+        Метод получение списка акций от API и занесение в БД. 
+    '''
+    service='InstrumentsService'
+    method='Shares'
+    task = send_request(w, Task(service=service, method=method))
+    result = await task
+    
+    if result:
+        if not filters:
+            filters = {}
+        
+        shares = result.get('instruments', None)
+
+        shares_list = []
+        for _share in shares:
+            new_share = Share(
+                    figi = _share.get('figi', None),
+                    ticker = _share.get('ticker', None),
+                    class_code = _share.get('classCode', None),
+                    lot = _share.get('lot', None),
+                    currency = _share.get('currency', None),
+                    name = _share.get('name', None),
+                    cor = _share.get('countryOfRisk', None),
+                    cor_name = _share.get('countryOfRiskName', None),
+                    sector = _share.get('sector', None)
+                )
+            shares_list.append(new_share)
+        return await db_w._add(items=shares_list)
+
+    return result
+
+# -------------------------------------------------------------------------------------
+
+
 
 
 # ------------- Tests -----------------------------------------------------------------
@@ -139,43 +182,6 @@ async def send_requests(w: Worker,
     return response
 
 
-
-
-@app.post('/get_api_shares')
-async def get_api_shares(w: Worker = Depends(get_worker),
-                    db_w: DBWorker = Depends(get_db_worker),
-                    filters=None):
-    '''
-        Метод получение списка акций от API и занесение в БД. 
-    '''
-    service='InstrumentsService'
-    method='Shares'
-    task = send_request(w, Task(service=service, method=method))
-    result = await task
-    
-    if result:
-        if not filters:
-            filters = {}
-        
-        shares = result.get('instruments', None)
-
-        shares_list = []
-        for _share in shares:
-            new_share = Share(
-                    figi = _share.get('figi', None),
-                    ticker = _share.get('ticker', None),
-                    class_code = _share.get('classCode', None),
-                    lot = _share.get('lot', None),
-                    currency = _share.get('currency', None),
-                    name = _share.get('name', None),
-                    cor = _share.get('countryOfRisk', None),
-                    cor_name = _share.get('countryOfRiskName', None),
-                    sector = _share.get('sector', None)
-                )
-            shares_list.append(new_share)
-        return await db_w._add(items=shares_list)
-
-    return result
 
 
 

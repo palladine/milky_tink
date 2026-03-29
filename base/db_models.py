@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import MetaData, String, ForeignKey
+from sqlalchemy import MetaData, String, ForeignKey, JSON
 from sqlalchemy.ext.asyncio import AsyncAttrs
 
 
@@ -28,6 +28,7 @@ class Share(Model):
     cor: Mapped[str] = mapped_column(String(5))                             # Код страны риска
     cor_name: Mapped[str] = mapped_column(String(255))                      # Наименование страны риска
     sector: Mapped[str] = mapped_column(String(30))                         # Сектор экономики
+    tracked_share: Mapped['TrackedShare'] = relationship(back_populates="share", uselist=False)
     tiles: Mapped[list["Tile"]] = relationship(back_populates="share")
 
 
@@ -39,21 +40,35 @@ class Share(Model):
 
 
 
+class TrackedShare(Model):
+    __tablename__ = 'tracked_share'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    share_id: Mapped[int] = mapped_column(ForeignKey("shares.id", ondelete="CASCADE"), unique=True)
+    share: Mapped["Share"] = relationship(back_populates="tracked_share")
+    data: Mapped[dict] = mapped_column(JSON, nullable=True)
+
+    def __str__(self):
+        return f'TrackedShare({self.share.ticker})'
+
+    def __repr__(self):
+        return str(self)
+
+
 
 class Tile(Model):
     __tablename__ = 'tiles'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    share_id: Mapped[int] = mapped_column(ForeignKey("shares.id"))
+    share_id: Mapped[int] = mapped_column(ForeignKey("shares.id", ondelete="CASCADE"))
     share: Mapped["Share"] = relationship(back_populates="tiles")
-    period_upd: Mapped[float]
     limit: Mapped[int]
     depth: Mapped[int]
     num_cell: Mapped[int] = mapped_column(unique=True)
 
 
     def __str__(self):
-        return f'Tile({self.id})'
+        return f'Tile({self.num_cell}, {self.share.ticker})'
 
     def __repr__(self):
         return str(self)
