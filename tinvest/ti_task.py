@@ -69,7 +69,7 @@ class Task:
 
     def setParamsGetOrderBook(self,
                                 instrumentId: str,
-                                depth: int = 10
+                                depth: int = 50
                             ):
         '''
             Стакан по инструменту
