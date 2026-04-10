@@ -14,16 +14,14 @@ def timed(func):
 
 
 
-def async_timed():
-    def wrapper(func):
-        @functools.wraps(func)
-        async def wrapped(*args, **kwargs):
-            start = time.monotonic()
-            try:
-                return await func(*args, **kwargs)
-            finally:
-                end = time.monotonic()
-                total = end - start
-                print(f'{func.__name__}: {total:.4f} sec')
-        return wrapped
-    return wrapper
+def async_timed(func):
+    @functools.wraps(func)
+    async def wrapped(*args, **kwargs):
+        start = time.monotonic()
+        try:
+            return await func(*args, **kwargs)
+        finally:
+            end = time.monotonic()
+            total = end - start
+            print(f'{func.__name__}: {total:.4f} sec')
+    return wrapped

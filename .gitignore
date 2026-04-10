@@ -16,6 +16,7 @@ uv.lock
 .python-version
 
 # app
+certs/
 tinvst/main.py
 /base/migrations/*
 !/base/migrations/env.py

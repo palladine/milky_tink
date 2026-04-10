@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package tinkoff.public.invest.api.contract.v1;
+
+
+import "google/protobuf/timestamp.proto";
+
+
+
+
+enum InstrumentStatusType {
+    INSTRUMENT_STATUS_UNSPECIFIED = 0;
+    INSTRUMENT_STATUS_BASE = 1;
+    INSTRUMENT_STATUS_ALL = 2;
+}
+
+enum InstrumentExchangeType {
+    INSTRUMENT_EXCHANGE_UNSPECIFIED = 0;
+    INSTRUMENT_EXCHANGE_DEALER = 1;
+}
+
+
+message Quotation {
+    int64 units = 1;
+    int32 nano = 2;
+}
+
+
+message MoneyValue {
+    string currency = 1;
+    int64 units = 2;
+    int32 nano = 3;
+}
+
+
+message BrandData {
+    string logo_name = 1;
+    string logo_base_color = 2;
+    string text_color = 3;
+}
+
+
+enum SecurityTradingStatus {
+    SECURITY_TRADING_STATUS_UNSPECIFIED = 0; 
+    SECURITY_TRADING_STATUS_NOT_AVAILABLE_FOR_TRADING = 1;
+    SECURITY_TRADING_STATUS_OPENING_PERIOD = 2;
+    SECURITY_TRADING_STATUS_CLOSING_PERIOD = 3;
+    SECURITY_TRADING_STATUS_BREAK_IN_TRADING = 4; 
+    SECURITY_TRADING_STATUS_NORMAL_TRADING = 5; 
+    SECURITY_TRADING_STATUS_CLOSING_AUCTION = 6;
+    SECURITY_TRADING_STATUS_DARK_POOL_AUCTION = 7; 
+    SECURITY_TRADING_STATUS_DISCRETE_AUCTION = 8; 
+    SECURITY_TRADING_STATUS_OPENING_AUCTION_PERIOD = 9;
+    SECURITY_TRADING_STATUS_TRADING_AT_CLOSING_AUCTION_PRICE = 10; 
+    SECURITY_TRADING_STATUS_SESSION_ASSIGNED = 11;
+    SECURITY_TRADING_STATUS_SESSION_CLOSE = 12;
+    SECURITY_TRADING_STATUS_SESSION_OPEN = 13;
+    SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING = 14; 
+    SECURITY_TRADING_STATUS_DEALER_BREAK_IN_TRADING = 15; 
+    SECURITY_TRADING_STATUS_DEALER_NOT_AVAILABLE_FOR_TRADING = 16;
+    SECURITY_TRADING_STATUS_STABILIZATION_AUCTION = 17;
+}
+
+
+enum ShareType {
+    SHARE_TYPE_UNSPECIFIED = 0;
+    SHARE_TYPE_COMMON = 1;
+    SHARE_TYPE_PREFERRED = 2;
+    SHARE_TYPE_ADR = 3;
+    SHARE_TYPE_GDR = 4; 
+    SHARE_TYPE_MLP = 5;
+    SHARE_TYPE_NY_REG_SHRS = 6;
+    SHARE_TYPE_CLOSED_END_FUND = 7;
+    SHARE_TYPE_REIT = 8;
+}
+
+
+enum RealExchange {
+    REAL_EXCHANGE_UNSPECIFIED = 0;
+    REAL_EXCHANGE_MOEX = 1;
+    REAL_EXCHANGE_RTS = 2;
+    REAL_EXCHANGE_OTC = 3;
+    REAL_EXCHANGE_DEALER = 4;
+}
+
+
+message Share {
+  string figi = 1; //FIGI-идентификатор инструмента.
+  string ticker = 2;  //Тикер инструмента.
+  string class_code = 3; //Класс-код (секция торгов).
+  string isin = 4; //ISIN-идентификатор инструмента.
+  int32 lot = 5; //Лотность инструмента. Возможно совершение операций только на количества ценной бумаги, кратные параметру `lot`. [Подробнее](./glossary#lot)
+  string currency = 6; //Валюта расчетов.
+
+  Quotation klong = 7 [deprecated = true]; //Коэффициент ставки риска длинной позиции по клиенту. 2 – клиент со стандартным уровнем риска (КСУР); 1 – клиент с повышенным уровнем риска (КПУР).
+  Quotation kshort = 8 [deprecated = true]; //Коэффициент ставки риска короткой позиции по клиенту. 2 – клиент со стандартным уровнем риска (КСУР); 1 – клиент с повышенным уровнем риска (КПУР).
+  Quotation dlong = 9; //Ставка риска начальной маржи для КСУР лонг. [Подробнее про ставки риска](https://www.tbank.ru/invest/help/brokerage/account/margin/about/#q5).
+  Quotation dshort = 10; //Ставка риска начальной маржи для КСУР шорт. [Подробнее про ставки риска](https://www.tbank.ru/invest/help/brokerage/account/margin/about/#q5).
+  Quotation dlong_min = 11; //Ставка риска начальной маржи для КПУР лонг. [Подробнее про ставки риска](https://www.tbank.ru/invest/help/brokerage/account/margin/about/#q5).
+  Quotation dshort_min = 12; //Ставка риска начальной маржи для КПУР шорт. [Подробнее про ставки риска](https://www.tbank.ru/invest/help/brokerage/account/margin/about/#q5).
+  bool short_enabled_flag = 13; //Признак доступности для операций в шорт.
+  string name = 15; //Название инструмента.
+  string exchange = 16; //Tорговая площадка (секция биржи).
+
+  google.protobuf.Timestamp  ipo_date = 17; //Дата IPO акции по UTC.
+  int64 issue_size = 18; //Размер выпуска.
+
+  string country_of_risk = 19; //Код страны риска — то есть страны, в которой компания ведет основной бизнес.
+  string country_of_risk_name = 20; //Наименование страны риска — то есть страны, в которой компания ведет основной бизнес.
+  string sector = 21; //Сектор экономики.
+  int64 issue_size_plan = 22; //Плановый размер выпуска.
+  MoneyValue nominal = 23; //Номинал.
+
+  SecurityTradingStatus trading_status = 25; //Текущий режим торгов инструмента.
+  bool otc_flag = 26; //Флаг, используемый ранее для определения внебиржевых инструментов. На данный момент не используется для торгуемых через API инструментов. Может использоваться как фильтр для операций, совершавшихся некоторое время назад на ОТС площадке.
+  bool buy_available_flag = 27; //Признак доступности для покупки.
+  bool sell_available_flag = 28; //Признак доступности для продажи.
+  bool div_yield_flag = 29; //Признак наличия дивидендной доходности.
+  ShareType share_type = 30; //Тип акции. Возможные значения — `[ShareType](./instruments#sharetype)`.
+  Quotation min_price_increment = 31; //Шаг цены.
+  bool api_trade_available_flag = 32; //Возможность торговать инструментом через API.
+
+  string uid = 33; //Уникальный идентификатор инструмента.
+  RealExchange real_exchange = 34; //Реальная площадка исполнения расчетов (биржа).
+  string position_uid = 35; //Уникальный идентификатор позиции инструмента.
+  string asset_uid = 36; //Уникальный идентификатор актива.
+  InstrumentExchangeType instrument_exchange = 37; //Тип площадки торговли.
+
+  repeated string required_tests = 38; //Тесты, которые необходимо пройти клиенту, чтобы совершать сделки по инструменту.
+
+  bool for_iis_flag = 46; //Признак доступности для ИИС.
+  bool for_qual_investor_flag = 47; //Флаг, отображающий доступность торговли инструментом только для квалифицированных инвесторов.
+  bool weekend_flag = 48; //Флаг, отображающий доступность торговли инструментом по выходным.
+  bool blocked_tca_flag = 49; //Флаг заблокированного ТКС.
+  bool liquidity_flag = 50; //Флаг достаточной ликвидности.
+  google.protobuf.Timestamp first_1min_candle_date = 56; //Дата первой минутной свечи.
+  google.protobuf.Timestamp first_1day_candle_date = 57; //Дата первой дневной свечи.
+  BrandData brand = 60; // Информация о бренде.
+
+  Quotation dlong_client = 90; //Ставка риска в лонг с учетом текущего уровня риска портфеля клиента. [Подробнее про ставки риска](https://www.tbank.ru/invest/help/brokerage/account/margin/about/#q5).
+  Quotation dshort_client = 91; //Ставка риска в шорт с учетом текущего уровня риска портфеля клиента. [Подробнее про ставки риска](https://www.tbank.ru/invest/help/brokerage/account/margin/about/#q5).
+}
+
+
+
+
+
+message InstrumentsRequest {
+    InstrumentStatusType instrument_status = 1;
+    InstrumentExchangeType instrument_exchange = 2;
+}
+
+message SharesResponse {
+    repeated Share instruments = 1;
+}
+
+
+service InstrumentsService {
+    rpc Shares (InstrumentsRequest) returns (SharesResponse);
+}

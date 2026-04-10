@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import selectinload
 
@@ -57,7 +57,7 @@ class FilterParser:
 
 
 
-class DBWorker:
+class DBClient:
     def __init__(self, db_user, db_pass, db_host, db_port, db_name):
         self.url = f'postgresql+asyncpg://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'
         self.engine = create_async_engine(self.url)
@@ -121,3 +121,7 @@ class DBWorker:
             result = await session.execute(stmt)
             await session.commit()
             return result.rowcount
+
+    # @connect
+    # async def _update(self, items=None, session=None):
+    #    ...
