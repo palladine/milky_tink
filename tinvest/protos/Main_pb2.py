@@ -24,13 +24,15 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nMain.proto\x12%tinkoff.public.invest.api.contract.v1\"(\n\tQuotation\x12\r\n\x05units\x18\x01 \x01(\x03\x12\x0c\n\x04nano\x18\x02 \x01(\x05\"Z\n\x05Order\x12?\n\x05price\x18\x01 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x10\n\x08quantity\x18\x02 \x01(\x03\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nMain.proto\x12%tinkoff.public.invest.api.contract.v1\"(\n\tQuotation\x12\r\n\x05units\x18\x01 \x01(\x03\x12\x0c\n\x04nano\x18\x02 \x01(\x05\"Z\n\x05Order\x12?\n\x05price\x18\x01 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x10\n\x08quantity\x18\x02 \x01(\x03*\x81\x07\n\x15SecurityTradingStatus\x12\'\n#SECURITY_TRADING_STATUS_UNSPECIFIED\x10\x00\x12\x35\n1SECURITY_TRADING_STATUS_NOT_AVAILABLE_FOR_TRADING\x10\x01\x12*\n&SECURITY_TRADING_STATUS_OPENING_PERIOD\x10\x02\x12*\n&SECURITY_TRADING_STATUS_CLOSING_PERIOD\x10\x03\x12,\n(SECURITY_TRADING_STATUS_BREAK_IN_TRADING\x10\x04\x12*\n&SECURITY_TRADING_STATUS_NORMAL_TRADING\x10\x05\x12+\n\'SECURITY_TRADING_STATUS_CLOSING_AUCTION\x10\x06\x12-\n)SECURITY_TRADING_STATUS_DARK_POOL_AUCTION\x10\x07\x12,\n(SECURITY_TRADING_STATUS_DISCRETE_AUCTION\x10\x08\x12\x32\n.SECURITY_TRADING_STATUS_OPENING_AUCTION_PERIOD\x10\t\x12<\n8SECURITY_TRADING_STATUS_TRADING_AT_CLOSING_AUCTION_PRICE\x10\n\x12,\n(SECURITY_TRADING_STATUS_SESSION_ASSIGNED\x10\x0b\x12)\n%SECURITY_TRADING_STATUS_SESSION_CLOSE\x10\x0c\x12(\n$SECURITY_TRADING_STATUS_SESSION_OPEN\x10\r\x12\x31\n-SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING\x10\x0e\x12\x33\n/SECURITY_TRADING_STATUS_DEALER_BREAK_IN_TRADING\x10\x0f\x12<\n8SECURITY_TRADING_STATUS_DEALER_NOT_AVAILABLE_FOR_TRADING\x10\x10\x12\x31\n-SECURITY_TRADING_STATUS_STABILIZATION_AUCTION\x10\x11\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'Main_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
+  _globals['_SECURITYTRADINGSTATUS']._serialized_start=188
+  _globals['_SECURITYTRADINGSTATUS']._serialized_end=1085
   _globals['_QUOTATION']._serialized_start=53
   _globals['_QUOTATION']._serialized_end=93
   _globals['_ORDER']._serialized_start=95

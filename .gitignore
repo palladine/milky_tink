@@ -20,3 +20,4 @@ certs/
 tinvst/main.py
 /base/migrations/*
 !/base/migrations/env.py
+.DS_Store

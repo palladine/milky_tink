@@ -94,27 +94,6 @@ class TradeDirection(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     TRADE_DIRECTION_BUY: _ClassVar[TradeDirection]
     TRADE_DIRECTION_SELL: _ClassVar[TradeDirection]
 
-class SecurityTradingStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = ()
-    SECURITY_TRADING_STATUS_UNSPECIFIED: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_NOT_AVAILABLE_FOR_TRADING: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_OPENING_PERIOD: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_CLOSING_PERIOD: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_BREAK_IN_TRADING: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_NORMAL_TRADING: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_CLOSING_AUCTION: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_DARK_POOL_AUCTION: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_DISCRETE_AUCTION: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_OPENING_AUCTION_PERIOD: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_TRADING_AT_CLOSING_AUCTION_PRICE: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_SESSION_ASSIGNED: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_SESSION_CLOSE: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_SESSION_OPEN: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_DEALER_BREAK_IN_TRADING: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_DEALER_NOT_AVAILABLE_FOR_TRADING: _ClassVar[SecurityTradingStatus]
-    SECURITY_TRADING_STATUS_STABILIZATION_AUCTION: _ClassVar[SecurityTradingStatus]
-
 class LastPriceType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     LAST_PRICE_UNSPECIFIED: _ClassVar[LastPriceType]
@@ -179,24 +158,6 @@ CANDLE_SOURCE_DEALER_WEEKEND: CandleSource
 TRADE_DIRECTION_UNSPECIFIED: TradeDirection
 TRADE_DIRECTION_BUY: TradeDirection
 TRADE_DIRECTION_SELL: TradeDirection
-SECURITY_TRADING_STATUS_UNSPECIFIED: SecurityTradingStatus
-SECURITY_TRADING_STATUS_NOT_AVAILABLE_FOR_TRADING: SecurityTradingStatus
-SECURITY_TRADING_STATUS_OPENING_PERIOD: SecurityTradingStatus
-SECURITY_TRADING_STATUS_CLOSING_PERIOD: SecurityTradingStatus
-SECURITY_TRADING_STATUS_BREAK_IN_TRADING: SecurityTradingStatus
-SECURITY_TRADING_STATUS_NORMAL_TRADING: SecurityTradingStatus
-SECURITY_TRADING_STATUS_CLOSING_AUCTION: SecurityTradingStatus
-SECURITY_TRADING_STATUS_DARK_POOL_AUCTION: SecurityTradingStatus
-SECURITY_TRADING_STATUS_DISCRETE_AUCTION: SecurityTradingStatus
-SECURITY_TRADING_STATUS_OPENING_AUCTION_PERIOD: SecurityTradingStatus
-SECURITY_TRADING_STATUS_TRADING_AT_CLOSING_AUCTION_PRICE: SecurityTradingStatus
-SECURITY_TRADING_STATUS_SESSION_ASSIGNED: SecurityTradingStatus
-SECURITY_TRADING_STATUS_SESSION_CLOSE: SecurityTradingStatus
-SECURITY_TRADING_STATUS_SESSION_OPEN: SecurityTradingStatus
-SECURITY_TRADING_STATUS_DEALER_NORMAL_TRADING: SecurityTradingStatus
-SECURITY_TRADING_STATUS_DEALER_BREAK_IN_TRADING: SecurityTradingStatus
-SECURITY_TRADING_STATUS_DEALER_NOT_AVAILABLE_FOR_TRADING: SecurityTradingStatus
-SECURITY_TRADING_STATUS_STABILIZATION_AUCTION: SecurityTradingStatus
 LAST_PRICE_UNSPECIFIED: LastPriceType
 LAST_PRICE_EXCHANGE: LastPriceType
 LAST_PRICE_DEALER: LastPriceType
@@ -547,14 +508,14 @@ class TradingStatus(_message.Message):
     TICKER_FIELD_NUMBER: _ClassVar[int]
     CLASS_CODE_FIELD_NUMBER: _ClassVar[int]
     figi: str
-    trading_status: SecurityTradingStatus
+    trading_status: _Main_pb2.SecurityTradingStatus
     time: _timestamp_pb2.Timestamp
     limit_order_available_flag: bool
     market_order_available_flag: bool
     instrument_uid: str
     ticker: str
     class_code: str
-    def __init__(self, figi: _Optional[str] = ..., trading_status: _Optional[_Union[SecurityTradingStatus, str]] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., limit_order_available_flag: bool = ..., market_order_available_flag: bool = ..., instrument_uid: _Optional[str] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ...) -> None: ...
+    def __init__(self, figi: _Optional[str] = ..., trading_status: _Optional[_Union[_Main_pb2.SecurityTradingStatus, str]] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., limit_order_available_flag: bool = ..., market_order_available_flag: bool = ..., instrument_uid: _Optional[str] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ...) -> None: ...
 
 class Ping(_message.Message):
     __slots__ = ("time", "stream_id", "ping_request_time")
