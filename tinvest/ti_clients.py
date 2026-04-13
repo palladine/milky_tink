@@ -1,6 +1,8 @@
 import sys
 import importlib
 from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator
+import asyncio
 
 import grpc
 import httpx
@@ -18,9 +20,6 @@ class Client(ABC):
         self.url = url
         self.token = token
 
-    @abstractmethod
-    async def close(self):
-        pass
 
     @abstractmethod
     async def get_response(self, task: Task | None):
@@ -43,7 +42,6 @@ class RESTClient(Client):
                                         timeout=10.0)
 
 
-    @async_timed
     async def get_response(self, task: Task | None):
         if task:
             try:
@@ -52,8 +50,8 @@ class RESTClient(Client):
                     json=task.data)
                 return response.content.decode()
             except Exception as e:
-                return get_error_by_code(701, self.__class__.__name__, e)
-        return get_error_by_code(702, self.__class__.__name__)
+                raise TypeError(get_error_by_code(701, self.__class__.__name__, e))
+        raise AttributeError(get_error_by_code(702, self.__class__.__name__))
 
     async def close(self):
         await self.client.aclose()
@@ -70,10 +68,11 @@ class GRPCClient(Client):
 
         self.options = [
             ('grpc.keepalive_time_ms', 30000),
-            ('grpc.keepalive_timeout_ms', 10000),
+            ('grpc.keepalive_timeout_ms', 20000),
             ('grpc.keepalive_permit_without_calls', 1),
             ('grpc.initial_reconnect_backoff_ms', 1000),
             ('grpc.max_reconnect_backoff_ms', 30000),
+            ('grpc.http2.max_pings_without_data', 0)
         ]
         
         self.root_certificates = None
@@ -87,7 +86,6 @@ class GRPCClient(Client):
         )
 
 
-    @async_timed
     async def get_response(self, task: Task | None):
         if task:
             try:
@@ -109,43 +107,46 @@ class GRPCClient(Client):
                 return MessageToJson(response, preserving_proto_field_name=False)
 
             except Exception as e:
-                return get_error_by_code(701, self.__class__.__name__, e)
-        return get_error_by_code(702, self.__class__.__name__)
+                raise TypeError(get_error_by_code(701, self.__class__.__name__, e))
+        raise AttributeError(get_error_by_code(702, self.__class__.__name__))
     
-    
-    async def close(self) -> None:
-        if self.channel:
-            await self.channel.close()
-            self.channel = None
-
-
 
 
 class GRPCStreamClient(GRPCClient):
 
-    @async_timed
-    async def get_response(self, task: Task | None):
-        if task:
-            try:
-                pb2 = importlib.import_module(f'tinvest.protos.{task.service}_pb2')
-                sys.modules[f'{task.service}_pb2'] = pb2
-                pb2_grpc = importlib.import_module(f'tinvest.protos.{task.service}_pb2_grpc')
-                sys.modules[f'{task.service}_pb2_grpc'] = pb2_grpc
+    async def get_response(self, task: Task | None) -> AsyncGenerator[str, None]:
+        if not task:
+            yield get_error_by_code(702, self.__class__.__name__)
+            return
 
-                request_class = getattr(pb2, f'{task.body_name_request}')
+        try:
+            pb2 = importlib.import_module(f'tinvest.protos.{task.service}_pb2')
+            sys.modules[f'{task.service}_pb2'] = pb2
+            pb2_grpc = importlib.import_module(f'tinvest.protos.{task.service}_pb2_grpc')
+            sys.modules[f'{task.service}_pb2_grpc'] = pb2_grpc
 
-                stub_class = getattr(pb2_grpc, f'{task.service}Stub')
-                stub = stub_class(self.channel)
+            request_class = getattr(pb2, f'{task.body_name_request}')
 
-                method = getattr(stub, task.method)
+            stub_class = getattr(pb2_grpc, f'{task.service}Stub')
+            stub = stub_class(self.channel)
 
-                req = request_class(**task.data)
+            method = getattr(stub, task.method)
 
-                async for response in method(req, metadata=self.headers):
-                    # TODO 
-                    print(MessageToJson(response, preserving_proto_field_name=False))
+            req = request_class(**task.data)
+            meth = method(req, metadata=self.headers)
 
-            except Exception as e:
-                return get_error_by_code(701, self.__class__.__name__, e)
-        return get_error_by_code(702, self.__class__.__name__)
+            async for response in meth:
+                res = MessageToJson(response, preserving_proto_field_name=False)
+                if not res:
+                    continue
+                yield res
+                await asyncio.sleep(3)
+
+
+        except asyncio.CancelledError:
+            return
+
+        except Exception as e:
+            yield get_error_by_code(701, self.__class__.__name__, e)
+            return
 

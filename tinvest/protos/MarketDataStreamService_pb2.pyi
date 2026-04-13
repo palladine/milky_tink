@@ -1,6 +1,7 @@
 import datetime
 
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+import tinvest.protos.Main_pb2 as _Main_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -199,14 +200,6 @@ SECURITY_TRADING_STATUS_STABILIZATION_AUCTION: SecurityTradingStatus
 LAST_PRICE_UNSPECIFIED: LastPriceType
 LAST_PRICE_EXCHANGE: LastPriceType
 LAST_PRICE_DEALER: LastPriceType
-
-class Quotation(_message.Message):
-    __slots__ = ("units", "nano")
-    UNITS_FIELD_NUMBER: _ClassVar[int]
-    NANO_FIELD_NUMBER: _ClassVar[int]
-    units: int
-    nano: int
-    def __init__(self, units: _Optional[int] = ..., nano: _Optional[int] = ...) -> None: ...
 
 class CandleInstrument(_message.Message):
     __slots__ = ("figi", "interval", "instrument_id")
@@ -478,10 +471,10 @@ class Candle(_message.Message):
     CANDLE_SOURCE_TYPE_FIELD_NUMBER: _ClassVar[int]
     figi: str
     interval: SubscriptionInterval
-    open: Quotation
-    high: Quotation
-    low: Quotation
-    close: Quotation
+    open: _Main_pb2.Quotation
+    high: _Main_pb2.Quotation
+    low: _Main_pb2.Quotation
+    close: _Main_pb2.Quotation
     volume: int
     time: _timestamp_pb2.Timestamp
     last_trade_ts: _timestamp_pb2.Timestamp
@@ -491,7 +484,7 @@ class Candle(_message.Message):
     volume_buy: int
     volume_sell: int
     candle_source_type: CandleSource
-    def __init__(self, figi: _Optional[str] = ..., interval: _Optional[_Union[SubscriptionInterval, str]] = ..., open: _Optional[_Union[Quotation, _Mapping]] = ..., high: _Optional[_Union[Quotation, _Mapping]] = ..., low: _Optional[_Union[Quotation, _Mapping]] = ..., close: _Optional[_Union[Quotation, _Mapping]] = ..., volume: _Optional[int] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., last_trade_ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., instrument_uid: _Optional[str] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ..., volume_buy: _Optional[int] = ..., volume_sell: _Optional[int] = ..., candle_source_type: _Optional[_Union[CandleSource, str]] = ...) -> None: ...
+    def __init__(self, figi: _Optional[str] = ..., interval: _Optional[_Union[SubscriptionInterval, str]] = ..., open: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., high: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., low: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., close: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., volume: _Optional[int] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., last_trade_ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., instrument_uid: _Optional[str] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ..., volume_buy: _Optional[int] = ..., volume_sell: _Optional[int] = ..., candle_source_type: _Optional[_Union[CandleSource, str]] = ...) -> None: ...
 
 class Trade(_message.Message):
     __slots__ = ("figi", "direction", "price", "quantity", "time", "instrument_uid", "trade_source", "ticker", "class_code")
@@ -506,22 +499,14 @@ class Trade(_message.Message):
     CLASS_CODE_FIELD_NUMBER: _ClassVar[int]
     figi: str
     direction: TradeDirection
-    price: Quotation
+    price: _Main_pb2.Quotation
     quantity: int
     time: _timestamp_pb2.Timestamp
     instrument_uid: str
     trade_source: TradeSourceType
     ticker: str
     class_code: str
-    def __init__(self, figi: _Optional[str] = ..., direction: _Optional[_Union[TradeDirection, str]] = ..., price: _Optional[_Union[Quotation, _Mapping]] = ..., quantity: _Optional[int] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., instrument_uid: _Optional[str] = ..., trade_source: _Optional[_Union[TradeSourceType, str]] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ...) -> None: ...
-
-class Order(_message.Message):
-    __slots__ = ("price", "quantity")
-    PRICE_FIELD_NUMBER: _ClassVar[int]
-    QUANTITY_FIELD_NUMBER: _ClassVar[int]
-    price: Quotation
-    quantity: int
-    def __init__(self, price: _Optional[_Union[Quotation, _Mapping]] = ..., quantity: _Optional[int] = ...) -> None: ...
+    def __init__(self, figi: _Optional[str] = ..., direction: _Optional[_Union[TradeDirection, str]] = ..., price: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., quantity: _Optional[int] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., instrument_uid: _Optional[str] = ..., trade_source: _Optional[_Union[TradeSourceType, str]] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ...) -> None: ...
 
 class OrderBook(_message.Message):
     __slots__ = ("figi", "depth", "is_consistent", "bids", "asks", "time", "limit_up", "limit_down", "instrument_uid", "order_book_type", "ticker", "class_code")
@@ -540,16 +525,16 @@ class OrderBook(_message.Message):
     figi: str
     depth: int
     is_consistent: bool
-    bids: _containers.RepeatedCompositeFieldContainer[Order]
-    asks: _containers.RepeatedCompositeFieldContainer[Order]
+    bids: _containers.RepeatedCompositeFieldContainer[_Main_pb2.Order]
+    asks: _containers.RepeatedCompositeFieldContainer[_Main_pb2.Order]
     time: _timestamp_pb2.Timestamp
-    limit_up: Quotation
-    limit_down: Quotation
+    limit_up: _Main_pb2.Quotation
+    limit_down: _Main_pb2.Quotation
     instrument_uid: str
     order_book_type: OrderBookType
     ticker: str
     class_code: str
-    def __init__(self, figi: _Optional[str] = ..., depth: _Optional[int] = ..., is_consistent: bool = ..., bids: _Optional[_Iterable[_Union[Order, _Mapping]]] = ..., asks: _Optional[_Iterable[_Union[Order, _Mapping]]] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., limit_up: _Optional[_Union[Quotation, _Mapping]] = ..., limit_down: _Optional[_Union[Quotation, _Mapping]] = ..., instrument_uid: _Optional[str] = ..., order_book_type: _Optional[_Union[OrderBookType, str]] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ...) -> None: ...
+    def __init__(self, figi: _Optional[str] = ..., depth: _Optional[int] = ..., is_consistent: bool = ..., bids: _Optional[_Iterable[_Union[_Main_pb2.Order, _Mapping]]] = ..., asks: _Optional[_Iterable[_Union[_Main_pb2.Order, _Mapping]]] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., limit_up: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., limit_down: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., instrument_uid: _Optional[str] = ..., order_book_type: _Optional[_Union[OrderBookType, str]] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ...) -> None: ...
 
 class TradingStatus(_message.Message):
     __slots__ = ("figi", "trading_status", "time", "limit_order_available_flag", "market_order_available_flag", "instrument_uid", "ticker", "class_code")
@@ -619,13 +604,13 @@ class LastPrice(_message.Message):
     INSTRUMENT_UID_FIELD_NUMBER: _ClassVar[int]
     LAST_PRICE_TYPE_FIELD_NUMBER: _ClassVar[int]
     figi: str
-    price: Quotation
+    price: _Main_pb2.Quotation
     time: _timestamp_pb2.Timestamp
     ticker: str
     class_code: str
     instrument_uid: str
     last_price_type: LastPriceType
-    def __init__(self, figi: _Optional[str] = ..., price: _Optional[_Union[Quotation, _Mapping]] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ..., instrument_uid: _Optional[str] = ..., last_price_type: _Optional[_Union[LastPriceType, str]] = ...) -> None: ...
+    def __init__(self, figi: _Optional[str] = ..., price: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., time: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ..., instrument_uid: _Optional[str] = ..., last_price_type: _Optional[_Union[LastPriceType, str]] = ...) -> None: ...
 
 class OpenInterest(_message.Message):
     __slots__ = ("instrument_uid", "time", "open_interest", "ticker", "class_code")

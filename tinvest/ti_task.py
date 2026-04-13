@@ -8,7 +8,6 @@ class Task:
         self.body_name_request = body_name_request
         self.body_name_response = body_name_response
         self.params = params if params else {}
-        self.is_stream = is_stream
 
         try:
             self.data = getattr(methods, f'setParams{self.method}')(**self.params)

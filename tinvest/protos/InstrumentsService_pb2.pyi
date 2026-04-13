@@ -1,6 +1,7 @@
 import datetime
 
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+import tinvest.protos.Main_pb2 as _Main_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -99,14 +100,6 @@ REAL_EXCHANGE_RTS: RealExchange
 REAL_EXCHANGE_OTC: RealExchange
 REAL_EXCHANGE_DEALER: RealExchange
 
-class Quotation(_message.Message):
-    __slots__ = ("units", "nano")
-    UNITS_FIELD_NUMBER: _ClassVar[int]
-    NANO_FIELD_NUMBER: _ClassVar[int]
-    units: int
-    nano: int
-    def __init__(self, units: _Optional[int] = ..., nano: _Optional[int] = ...) -> None: ...
-
 class MoneyValue(_message.Message):
     __slots__ = ("currency", "units", "nano")
     CURRENCY_FIELD_NUMBER: _ClassVar[int]
@@ -181,12 +174,12 @@ class Share(_message.Message):
     isin: str
     lot: int
     currency: str
-    klong: Quotation
-    kshort: Quotation
-    dlong: Quotation
-    dshort: Quotation
-    dlong_min: Quotation
-    dshort_min: Quotation
+    klong: _Main_pb2.Quotation
+    kshort: _Main_pb2.Quotation
+    dlong: _Main_pb2.Quotation
+    dshort: _Main_pb2.Quotation
+    dlong_min: _Main_pb2.Quotation
+    dshort_min: _Main_pb2.Quotation
     short_enabled_flag: bool
     name: str
     exchange: str
@@ -203,7 +196,7 @@ class Share(_message.Message):
     sell_available_flag: bool
     div_yield_flag: bool
     share_type: ShareType
-    min_price_increment: Quotation
+    min_price_increment: _Main_pb2.Quotation
     api_trade_available_flag: bool
     uid: str
     real_exchange: RealExchange
@@ -219,9 +212,9 @@ class Share(_message.Message):
     first_1min_candle_date: _timestamp_pb2.Timestamp
     first_1day_candle_date: _timestamp_pb2.Timestamp
     brand: BrandData
-    dlong_client: Quotation
-    dshort_client: Quotation
-    def __init__(self, figi: _Optional[str] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ..., isin: _Optional[str] = ..., lot: _Optional[int] = ..., currency: _Optional[str] = ..., klong: _Optional[_Union[Quotation, _Mapping]] = ..., kshort: _Optional[_Union[Quotation, _Mapping]] = ..., dlong: _Optional[_Union[Quotation, _Mapping]] = ..., dshort: _Optional[_Union[Quotation, _Mapping]] = ..., dlong_min: _Optional[_Union[Quotation, _Mapping]] = ..., dshort_min: _Optional[_Union[Quotation, _Mapping]] = ..., short_enabled_flag: bool = ..., name: _Optional[str] = ..., exchange: _Optional[str] = ..., ipo_date: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., issue_size: _Optional[int] = ..., country_of_risk: _Optional[str] = ..., country_of_risk_name: _Optional[str] = ..., sector: _Optional[str] = ..., issue_size_plan: _Optional[int] = ..., nominal: _Optional[_Union[MoneyValue, _Mapping]] = ..., trading_status: _Optional[_Union[SecurityTradingStatus, str]] = ..., otc_flag: bool = ..., buy_available_flag: bool = ..., sell_available_flag: bool = ..., div_yield_flag: bool = ..., share_type: _Optional[_Union[ShareType, str]] = ..., min_price_increment: _Optional[_Union[Quotation, _Mapping]] = ..., api_trade_available_flag: bool = ..., uid: _Optional[str] = ..., real_exchange: _Optional[_Union[RealExchange, str]] = ..., position_uid: _Optional[str] = ..., asset_uid: _Optional[str] = ..., instrument_exchange: _Optional[_Union[InstrumentExchangeType, str]] = ..., required_tests: _Optional[_Iterable[str]] = ..., for_iis_flag: bool = ..., for_qual_investor_flag: bool = ..., weekend_flag: bool = ..., blocked_tca_flag: bool = ..., liquidity_flag: bool = ..., first_1min_candle_date: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., first_1day_candle_date: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., brand: _Optional[_Union[BrandData, _Mapping]] = ..., dlong_client: _Optional[_Union[Quotation, _Mapping]] = ..., dshort_client: _Optional[_Union[Quotation, _Mapping]] = ...) -> None: ...
+    dlong_client: _Main_pb2.Quotation
+    dshort_client: _Main_pb2.Quotation
+    def __init__(self, figi: _Optional[str] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ..., isin: _Optional[str] = ..., lot: _Optional[int] = ..., currency: _Optional[str] = ..., klong: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., kshort: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., dlong: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., dshort: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., dlong_min: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., dshort_min: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., short_enabled_flag: bool = ..., name: _Optional[str] = ..., exchange: _Optional[str] = ..., ipo_date: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., issue_size: _Optional[int] = ..., country_of_risk: _Optional[str] = ..., country_of_risk_name: _Optional[str] = ..., sector: _Optional[str] = ..., issue_size_plan: _Optional[int] = ..., nominal: _Optional[_Union[MoneyValue, _Mapping]] = ..., trading_status: _Optional[_Union[SecurityTradingStatus, str]] = ..., otc_flag: bool = ..., buy_available_flag: bool = ..., sell_available_flag: bool = ..., div_yield_flag: bool = ..., share_type: _Optional[_Union[ShareType, str]] = ..., min_price_increment: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., api_trade_available_flag: bool = ..., uid: _Optional[str] = ..., real_exchange: _Optional[_Union[RealExchange, str]] = ..., position_uid: _Optional[str] = ..., asset_uid: _Optional[str] = ..., instrument_exchange: _Optional[_Union[InstrumentExchangeType, str]] = ..., required_tests: _Optional[_Iterable[str]] = ..., for_iis_flag: bool = ..., for_qual_investor_flag: bool = ..., weekend_flag: bool = ..., blocked_tca_flag: bool = ..., liquidity_flag: bool = ..., first_1min_candle_date: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., first_1day_candle_date: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., brand: _Optional[_Union[BrandData, _Mapping]] = ..., dlong_client: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., dshort_client: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ...) -> None: ...
 
 class InstrumentsRequest(_message.Message):
     __slots__ = ("instrument_status", "instrument_exchange")

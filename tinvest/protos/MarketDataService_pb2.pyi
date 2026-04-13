@@ -1,6 +1,7 @@
 import datetime
 
 from google.protobuf import timestamp_pb2 as _timestamp_pb2
+import tinvest.protos.Main_pb2 as _Main_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
@@ -8,22 +9,6 @@ from collections.abc import Iterable as _Iterable, Mapping as _Mapping
 from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
-
-class Quotation(_message.Message):
-    __slots__ = ("units", "nano")
-    UNITS_FIELD_NUMBER: _ClassVar[int]
-    NANO_FIELD_NUMBER: _ClassVar[int]
-    units: int
-    nano: int
-    def __init__(self, units: _Optional[int] = ..., nano: _Optional[int] = ...) -> None: ...
-
-class Order(_message.Message):
-    __slots__ = ("price", "quantity")
-    PRICE_FIELD_NUMBER: _ClassVar[int]
-    QUANTITY_FIELD_NUMBER: _ClassVar[int]
-    price: Quotation
-    quantity: int
-    def __init__(self, price: _Optional[_Union[Quotation, _Mapping]] = ..., quantity: _Optional[int] = ...) -> None: ...
 
 class GetOrderBookRequest(_message.Message):
     __slots__ = ("figi", "depth", "instrument_id")
@@ -53,16 +38,16 @@ class GetOrderBookResponse(_message.Message):
     ORDERBOOK_TS_FIELD_NUMBER: _ClassVar[int]
     figi: str
     depth: int
-    bids: _containers.RepeatedCompositeFieldContainer[Order]
-    asks: _containers.RepeatedCompositeFieldContainer[Order]
-    last_price: Quotation
-    close_price: Quotation
-    limit_up: Quotation
-    limit_down: Quotation
+    bids: _containers.RepeatedCompositeFieldContainer[_Main_pb2.Order]
+    asks: _containers.RepeatedCompositeFieldContainer[_Main_pb2.Order]
+    last_price: _Main_pb2.Quotation
+    close_price: _Main_pb2.Quotation
+    limit_up: _Main_pb2.Quotation
+    limit_down: _Main_pb2.Quotation
     instrument_uid: str
     ticker: str
     class_code: str
     last_price_ts: _timestamp_pb2.Timestamp
     close_price_ts: _timestamp_pb2.Timestamp
     orderbook_ts: _timestamp_pb2.Timestamp
-    def __init__(self, figi: _Optional[str] = ..., depth: _Optional[int] = ..., bids: _Optional[_Iterable[_Union[Order, _Mapping]]] = ..., asks: _Optional[_Iterable[_Union[Order, _Mapping]]] = ..., last_price: _Optional[_Union[Quotation, _Mapping]] = ..., close_price: _Optional[_Union[Quotation, _Mapping]] = ..., limit_up: _Optional[_Union[Quotation, _Mapping]] = ..., limit_down: _Optional[_Union[Quotation, _Mapping]] = ..., instrument_uid: _Optional[str] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ..., last_price_ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., close_price_ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., orderbook_ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, figi: _Optional[str] = ..., depth: _Optional[int] = ..., bids: _Optional[_Iterable[_Union[_Main_pb2.Order, _Mapping]]] = ..., asks: _Optional[_Iterable[_Union[_Main_pb2.Order, _Mapping]]] = ..., last_price: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., close_price: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., limit_up: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., limit_down: _Optional[_Union[_Main_pb2.Quotation, _Mapping]] = ..., instrument_uid: _Optional[str] = ..., ticker: _Optional[str] = ..., class_code: _Optional[str] = ..., last_price_ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., close_price_ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., orderbook_ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...

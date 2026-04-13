@@ -9,7 +9,7 @@ from tinvest import Task, RESTClient, GRPCClient, GRPCStreamClient, utils, get_e
 from .db_models import Share, TrackedShare, Tile
 from .db_client import DBClient
 from contextlib import asynccontextmanager
-
+from fastapi.responses import StreamingResponse
 
 
 
@@ -49,7 +49,9 @@ async def lifespan(app: FastAPI):
 
     # секция задач при запуске приложения
     app.state = state
-
+    
+    asyncio.create_task(get_orderbooks_stream(state.db_client))
+    
     yield
 
     # секция задач при закрытии приложения
@@ -190,13 +192,54 @@ async def set_tracked_shares(db_c: DBClient = Depends(get_db_client)):
 
 
 
+# --------------------- 
+async def get_orderbooks_stream(db_c: DBClient = Depends(get_db_client)):
+
+
+    instruments = ["SBER_TQBR"]
+    params = {
+        'instruments': instruments,
+        'depth': 50,
+        'ping_delay': 20000
+    }
+    
+    task_params = {'service': 'MarketDataStreamService',
+                    'method': 'MarketDataServerSideStream',
+                    'body_name_request': 'MarketDataServerSideStreamRequest',
+                    'body_name_response': 'MarketDataResponse',
+                    'params': params,
+                }
+    stream_client = GRPCStreamClient(token=os.getenv('TOKEN'),
+                                    url=os.getenv('GRPC_SANDBOX_URL'))
+    
+
+    stream_responses = send_stream_request(stream_client, Task(**task_params))
+    
+    async for response in stream_responses:
+        try:
+            data = json.loads(response)
+
+            if 'orderbook' in data:
+                # Можно отправить клиентам через WebSocket и т.д.
+                # print(data)
+                print('+')
+        except Exception as e:
+            print(response)
+# -------------------------
+
+
+
+
+
+
 
 # ------------- Tests -----------------------------------------------------------------
 @app.get('/{protocol}/test_concurrency')
 async def test_concurrency(protocol: str = Path(...),
                             c: RESTClient | GRPCClient = Depends(get_client_by_protocol)):
     '''
-        Тестовый эндпоинт для проверки конкурентности
+        Тестовый эндпоинт для проверки конкурентности 
+        (получение стаканов инструментов)
     '''
     figis = ['BBG004731489'] * 100
     
@@ -262,13 +305,23 @@ async def test_delete(db_c: DBClient = Depends(get_db_client)):
 
 ## методы для React
 ## данные для запросов от React передаются в теле запроса body
-async def send_request(c: RESTClient | GRPCClient | GRPCStreamClient, 
+async def send_request(c: RESTClient | GRPCClient, 
                     task: Task | None = None):
     try:
         response = await c.get_response(task)
         return json.loads(response)
     except Exception as e:
-        return get_error_by_code(703, e)
+        raise TypeError(get_error_by_code(703, e))
+
+
+
+async def send_stream_request(c: GRPCStreamClient,
+                            task: Task | None = None):
+    try:
+        async for stream_data in c.get_response(task):
+            yield stream_data
+    except Exception as e:
+        yield get_error_by_code(703, e)
 
 
 
@@ -359,35 +412,6 @@ async def remove_tile(data: dict = Body(...),
     num_cell = data.get('num_cell', None)
     res = await db_c._delete(model=Tile, filters={'num_cell': num_cell})
     return res
-
-
-
-
-@app.get('/get_orderbooks_stream')
-async def get_orderbooks_stream(db_c: DBClient = Depends(get_db_client)):
-
-    instruments = ["SBER_TQBR"]
-    params = {
-        'instruments': instruments,
-    }
-    
-    task_params = {'service': 'MarketDataStreamService',
-                    'method': 'MarketDataServerSideStream',
-                    'body_name_request': 'MarketDataServerSideStreamRequest',
-                    'body_name_response': 'MarketDataResponse',
-                    'params': params,
-                    'is_stream': True
-                }
-    stream_client = GRPCStreamClient(token=os.getenv('TOKEN'),
-                                    url=os.getenv('GRPC_SANDBOX_URL'))
-    result = await send_request(stream_client, Task(**task_params))
-
-    return result
-
-
-
-
-
 
 
 

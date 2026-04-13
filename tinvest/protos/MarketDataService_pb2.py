@@ -23,23 +23,20 @@ _sym_db = _symbol_database.Default()
 
 
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+import tinvest.protos.Main_pb2 as Main__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17MarketDataService.proto\x12%tinkoff.public.invest.api.contract.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"(\n\tQuotation\x12\r\n\x05units\x18\x01 \x01(\x03\x12\x0c\n\x04nano\x18\x02 \x01(\x05\"Z\n\x05Order\x12?\n\x05price\x18\x01 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x10\n\x08quantity\x18\x02 \x01(\x03\"I\n\x13GetOrderBookRequest\x12\x0c\n\x04\x66igi\x18\x01 \x01(\t\x12\r\n\x05\x64\x65pth\x18\x02 \x01(\x05\x12\x15\n\rinstrument_id\x18\x03 \x01(\t\"\x97\x05\n\x14GetOrderBookResponse\x12\x0c\n\x04\x66igi\x18\x01 \x01(\t\x12\r\n\x05\x64\x65pth\x18\x02 \x01(\x05\x12:\n\x04\x62ids\x18\x03 \x03(\x0b\x32,.tinkoff.public.invest.api.contract.v1.Order\x12:\n\x04\x61sks\x18\x04 \x03(\x0b\x32,.tinkoff.public.invest.api.contract.v1.Order\x12\x44\n\nlast_price\x18\x05 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x45\n\x0b\x63lose_price\x18\x06 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x42\n\x08limit_up\x18\x07 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x44\n\nlimit_down\x18\x08 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x16\n\x0einstrument_uid\x18\t \x01(\t\x12\x0e\n\x06ticker\x18\n \x01(\t\x12\x12\n\nclass_code\x18\x0b \x01(\t\x12\x31\n\rlast_price_ts\x18\x0c \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x32\n\x0e\x63lose_price_ts\x18\r \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x0corderbook_ts\x18\x0e \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\x9d\x01\n\x11MarketDataService\x12\x87\x01\n\x0cGetOrderBook\x12:.tinkoff.public.invest.api.contract.v1.GetOrderBookRequest\x1a;.tinkoff.public.invest.api.contract.v1.GetOrderBookResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x17MarketDataService.proto\x12%tinkoff.public.invest.api.contract.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\nMain.proto\"I\n\x13GetOrderBookRequest\x12\x0c\n\x04\x66igi\x18\x01 \x01(\t\x12\r\n\x05\x64\x65pth\x18\x02 \x01(\x05\x12\x15\n\rinstrument_id\x18\x03 \x01(\t\"\x97\x05\n\x14GetOrderBookResponse\x12\x0c\n\x04\x66igi\x18\x01 \x01(\t\x12\r\n\x05\x64\x65pth\x18\x02 \x01(\x05\x12:\n\x04\x62ids\x18\x03 \x03(\x0b\x32,.tinkoff.public.invest.api.contract.v1.Order\x12:\n\x04\x61sks\x18\x04 \x03(\x0b\x32,.tinkoff.public.invest.api.contract.v1.Order\x12\x44\n\nlast_price\x18\x05 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x45\n\x0b\x63lose_price\x18\x06 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x42\n\x08limit_up\x18\x07 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x44\n\nlimit_down\x18\x08 \x01(\x0b\x32\x30.tinkoff.public.invest.api.contract.v1.Quotation\x12\x16\n\x0einstrument_uid\x18\t \x01(\t\x12\x0e\n\x06ticker\x18\n \x01(\t\x12\x12\n\nclass_code\x18\x0b \x01(\t\x12\x31\n\rlast_price_ts\x18\x0c \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x32\n\x0e\x63lose_price_ts\x18\r \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x0corderbook_ts\x18\x0e \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\x9d\x01\n\x11MarketDataService\x12\x87\x01\n\x0cGetOrderBook\x12:.tinkoff.public.invest.api.contract.v1.GetOrderBookRequest\x1a;.tinkoff.public.invest.api.contract.v1.GetOrderBookResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'MarketDataService_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_QUOTATION']._serialized_start=99
-  _globals['_QUOTATION']._serialized_end=139
-  _globals['_ORDER']._serialized_start=141
-  _globals['_ORDER']._serialized_end=231
-  _globals['_GETORDERBOOKREQUEST']._serialized_start=233
-  _globals['_GETORDERBOOKREQUEST']._serialized_end=306
-  _globals['_GETORDERBOOKRESPONSE']._serialized_start=309
-  _globals['_GETORDERBOOKRESPONSE']._serialized_end=972
-  _globals['_MARKETDATASERVICE']._serialized_start=975
-  _globals['_MARKETDATASERVICE']._serialized_end=1132
+  _globals['_GETORDERBOOKREQUEST']._serialized_start=111
+  _globals['_GETORDERBOOKREQUEST']._serialized_end=184
+  _globals['_GETORDERBOOKRESPONSE']._serialized_start=187
+  _globals['_GETORDERBOOKRESPONSE']._serialized_end=850
+  _globals['_MARKETDATASERVICE']._serialized_start=853
+  _globals['_MARKETDATASERVICE']._serialized_end=1010
 # @@protoc_insertion_point(module_scope)

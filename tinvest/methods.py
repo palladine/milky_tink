@@ -37,7 +37,8 @@ def setParamsShares(instrumentStatus: str = 'INSTRUMENT_STATUS_BASE',
 
 # +
 def setParamsMarketDataServerSideStream(instruments: list[str] | None = None, 
-                                        depth: int = 50):
+                                        depth: int = 10,
+                                        ping_delay = 120000):
     '''
         server-side стрим предоставления биржевой информации (стаканы по инструментам)
     '''
@@ -60,7 +61,7 @@ def setParamsMarketDataServerSideStream(instruments: list[str] | None = None,
                     "instruments": instruments_ids
                 },
                 "ping_settings": {
-                    "ping_delay_ms": 5000
+                    "ping_delay_ms": ping_delay
                 }
         }
 
@@ -104,7 +105,7 @@ def setParamsShareBy(_id: str,
 
 
 def setParamsGetOrderBook(instrumentId: str,
-                            depth: int = 50
+                            depth: int = 10
                         ):
     '''
         Стакан по инструменту

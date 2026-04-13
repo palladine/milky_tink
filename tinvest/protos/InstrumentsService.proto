@@ -5,7 +5,7 @@ package tinkoff.public.invest.api.contract.v1;
 
 import "google/protobuf/timestamp.proto";
 
-
+import "Main.proto";
 
 
 enum InstrumentStatusType {
@@ -20,10 +20,7 @@ enum InstrumentExchangeType {
 }
 
 
-message Quotation {
-    int64 units = 1;
-    int32 nano = 2;
-}
+
 
 
 message MoneyValue {
@@ -86,7 +83,7 @@ enum RealExchange {
 
 message Share {
   string figi = 1; //FIGI-идентификатор инструмента.
-  string ticker = 2;  //Тикер инструмента.
+  string ticker = 2; //Тикер инструмента.
   string class_code = 3; //Класс-код (секция торгов).
   string isin = 4; //ISIN-идентификатор инструмента.
   int32 lot = 5; //Лотность инструмента. Возможно совершение операций только на количества ценной бумаги, кратные параметру `lot`. [Подробнее](./glossary#lot)
