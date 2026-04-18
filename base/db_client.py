@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import select, delete, update
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, RelationshipProperty, InstrumentedAttribute
 
 
 def connect(func):
@@ -32,26 +32,147 @@ class FilterParser:
         'endswith': lambda f, v: f.endswith(v),
         'contains': lambda f, v: f.contains(v),
         'in': lambda f, v: f.in_(v if isinstance(v, list) else [v]),
-        'not_in': lambda f, v: f.not_in(v if isinstance(v, list) else [v]),
+        'not_in': lambda f, v: f.notin_(v if isinstance(v, list) else [v]),
         'is_null': lambda f, v: f.is_(None) if v else f.isnot(None),
     }
     
+    # @classmethod
+    # def parse(cls, model, filters: dict):
+    #     conditions = []
+    #     for key, value in filters.items():
+    #         if '__' in key:
+    #             field_name, op_name = key.split('__', 1)
+    #             if hasattr(model, field_name) and op_name in cls.OPERATORS:
+    #                 field = getattr(model, field_name)
+    #                 op_func = cls.OPERATORS[op_name]
+    #                 conditions.append(op_func(field, value))
+    #         else:
+    #             if hasattr(model, key):
+    #                 field = getattr(model, key)
+    #                 op_func = cls.OPERATORS['eq']
+    #                 conditions.append(op_func(field, value))
+    #     return conditions
+
+    # @classmethod
+    # def parse(cls, model, filters: dict):
+    #     conditions = []
+
+    #     # для каждого фильтра
+    #     for key, value in filters.items():
+            
+    #         # тип условия по умолчанию
+    #         op_func = cls.OPERATORS['eq']
+            
+    #         if '__' in key:
+    #             # ex. [], 'share', 'ticker'
+    #             *_rels, field, op_name = key.split('__')
+                
+    #             if op_name in cls.OPERATORS:
+    #                 op_func = cls.OPERATORS[op_name]
+    #             else:
+    #                 _rels.append(field)
+    #                 field = op_name
+            
+
+    #             current_field = model
+    #             while _rels:
+    #                 current_rel = _rels.pop(0)
+    #                 if hasattr(current_field, current_rel):
+    #                     attr = getattr(current_field, current_rel)
+    #                     current_cond = op_func()
+
+    #                     if hasattr(attr, 'property') and isinstance(attr.property, RelationshipProperty):
+
+    #                         if attr.property.direction.name == "MANYTOONE":
+    #                             current_cond = attr.has(current_cond)
+                            
+    #                         conditions.append(current_cond)
+    #                         current_field = attr.property.mapper.class_
+
+
+
+    #                     else:
+    #                         raise AttributeError(f'Неправильный тип поля {current_rel} (ожидается relation)!')
+    #                 else:
+    #                     raise AttributeError(f'Неправильное поле {current_rel} в моделе {current_field}!')
+
+    #             if hasattr(current_field, field):
+    #                 active_field = getattr(current_field, field)
+    #                 conditions.append(op_func(active_field, value))
+    #             else:
+    #                 raise AttributeError(f'Неправильное поле {field} в моделе {current_field}!')
+
+    #         else:
+    #             if hasattr(model, key):
+    #                 active_field = getattr(model, key)
+    #                 conditions.append(op_func(active_field, value))
+    #             else:
+    #                 raise AttributeError(f'Неправильное поле {key} в моделе {model}!')
+                
+            
+    #     return conditions
+
+
+
+
     @classmethod
     def parse(cls, model, filters: dict):
         conditions = []
-        
+
         for key, value in filters.items():
+
             if '__' in key:
-                field_name, op_name = key.split('__', 1)
-                if hasattr(model, field_name) and op_name in cls.OPERATORS:
-                    field = getattr(model, field_name)
+                # ex. [], 'share', 'ticker'
+                *pseudo_rels, field, op_name = key.split('__')
+                
+                if op_name in cls.OPERATORS:
                     op_func = cls.OPERATORS[op_name]
-                    conditions.append(op_func(field, value))
-            else:
-                if hasattr(model, key):
-                    conditions.append(getattr(model, key) == value)
-        
+                else:
+                    pseudo_rels.append(field)
+                    field = op_name
+                    op_func = cls.OPERATORS['eq']
+
+                _rels = []
+                current_field = model
+                for pseudo_rel in pseudo_rels:
+                    
+                    if hasattr(current_field, pseudo_rel):
+                        attr = getattr(current_field, pseudo_rel)
+
+                        if hasattr(attr, 'property') and isinstance(attr.property, RelationshipProperty):
+                            _rels.append(pseudo_rel)
+
+                            current_field = attr.property.mapper.class_
+
+                        else:
+                            raise AttributeError(f'Неправильный тип поля {pseudo_rel} (ожидается relation)!')
+                    else:
+                        raise AttributeError(f'Неправильное поле {pseudo_rel} в моделе {current_field}!')
+
+                if not hasattr(current_field, field):
+                    raise AttributeError(f'Неправильное поле {field} в моделе {current_field}!')
+
+                
+                target_field = getattr(current_field, field)
+                base_cond = op_func(target_field, value)
+                current_cond = base_cond
+                temp_model = model
+                
+                for rel_name in _rels:
+                    rel_attr = getattr(temp_model, rel_name)
+                    if rel_attr.property.direction.name == 'MANYTOONE':
+                        current_cond = rel_attr.has(current_cond)
+                    else:
+                        current_cond = rel_attr.any(current_cond)
+                    
+                    temp_model = rel_attr.property.mapper.class_
+
+                conditions.append(current_cond)
+            
         return conditions
+
+
+
 
 
 
@@ -120,8 +241,18 @@ class DBClient:
             stmt = delete(model).filter(*_filters)
             result = await session.execute(stmt)
             await session.commit()
-            return result.rowcount
+            #return result.rowcount
 
-    # @connect
-    # async def _update(self, items=None, session=None):
-    #    ...
+    @connect
+    async def _update(self, model, session=None, 
+                        filters=None, data=None):
+        if session:
+            if not filters:
+                filters = {}
+            _filters: list = FilterParser.parse(model, filters)
+
+            stmt = update(model).filter(*_filters).values(**data)
+
+            result = await session.execute(stmt)
+            await session.commit()
+            #return result.rowcount

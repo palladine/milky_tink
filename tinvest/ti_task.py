@@ -1,4 +1,5 @@
 from . import methods
+from .errors import get_error_by_code
 
 class Task:
     def __init__(self, service=None, method=None, body_name_request=None, 
@@ -11,5 +12,5 @@ class Task:
 
         try:
             self.data = getattr(methods, f'setParams{self.method}')(**self.params)
-        except Exception:
-            raise AttributeError(f'Wrong method')
+        except Exception as e:
+            return(get_error_by_code(707, self, e))

@@ -1,9 +1,12 @@
-def get_error_by_code(code, *args):
+def get_error_by_code(code, obj, *args):
     errors = {
-        700: "Клиент не инициализирован.",
+        #700: "Клиент не инициализирован.",
         701: "Ошибка запроса к внешнему API.",
         702: "Ошибка запроса к внешнему API [Объект задачи (Task) отсутствует].",
-        703: "Ошибка в методе send_request.",
-        704: "Отсутствует обязательный параметр."
+        #703: "Ошибка в методе send_request.",
+        704: "Отсутствует обязательный параметр.",
+        705: "Stream отменен.",
+        706: "Ошибка в proto-файле.",
+        707: "Неверный метод к внешнему API."
     }
-    return f"{errors.get(code)} {', '.join(map(str, args))}"
+    raise Exception(f"{errors.get(code)} {obj} {', '.join(map(str, args))}")

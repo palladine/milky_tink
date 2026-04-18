@@ -5,11 +5,11 @@ import os
 import json
 import asyncio
 import time
-from tinvest import Task, RESTClient, GRPCClient, GRPCStreamClient, utils, get_error_by_code
+from tinvest import Task, RESTClient, GRPCClient, GRPCStreamClient
 from .db_models import Share, TrackedShare, Tile
 from .db_client import DBClient
 from contextlib import asynccontextmanager
-from fastapi.responses import StreamingResponse
+
 
 
 
@@ -77,17 +77,17 @@ async def get_client_by_protocol(protocol: str):
 
 async def get_rest_client() -> RESTClient:
     if not hasattr(app.state, 'rest_client') or app.state.rest_client is None:
-        raise RuntimeError(get_error_by_code(700, 'rest_client'))
+        raise RuntimeError('rest_client')
     return app.state.rest_client
 
 async def get_grpc_client() -> GRPCClient:
     if not hasattr(app.state, 'grpc_client') or app.state.grpc_client is None:
-        raise RuntimeError(get_error_by_code(700, 'grpc_client'))
+        raise RuntimeError('grpc_client')
     return app.state.grpc_client
 
 async def get_db_client() -> DBClient:
     if not hasattr(app.state, 'db_client') or app.state.db_client is None:
-        raise RuntimeError(get_error_by_code(700, 'db_client'))
+        raise RuntimeError('db_client')
     return app.state.db_client
 
 
@@ -103,6 +103,7 @@ app.add_middleware(
     allow_methods=['GET', 'POST'],      # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],                # Allow all headers
 )
+
 
 
 
@@ -192,14 +193,17 @@ async def set_tracked_shares(db_c: DBClient = Depends(get_db_client)):
 
 
 
-# --------------------- 
+# ------------------------------- Фоновые задачи --------------------------------------
 async def get_orderbooks_stream(db_c: DBClient = Depends(get_db_client)):
 
+    # получение списка отслеживаемых инструментов
+    tracked_shares = await db_c._get(model=TrackedShare)
+    instruments = [f'{ts.share.ticker}_{ts.share.class_code}' for ts in tracked_shares]
+    #instruments = ['SBER_TQBR']
 
-    instruments = ["SBER_TQBR"]
     params = {
         'instruments': instruments,
-        'depth': 50,
+        'depth': 10,
         'ping_delay': 20000
     }
     
@@ -220,20 +224,32 @@ async def get_orderbooks_stream(db_c: DBClient = Depends(get_db_client)):
             data = json.loads(response)
 
             if 'orderbook' in data:
-                # Можно отправить клиентам через WebSocket и т.д.
-                # print(data)
-                print('+')
+
+                orderbook = data.get('orderbook', None)
+                result_data = {
+                    'ticker': orderbook['ticker'],
+                    'class_code': orderbook['classCode'],
+                    'figi': orderbook['figi'],
+                    'depth': orderbook['depth'],
+                    'bids': orderbook['bids'],
+                    'asks': orderbook['asks']
+                }
+                #print(result_data)
+
+                result = await db_c._update(model=TrackedShare, 
+                                filters={'share__ticker': orderbook['ticker']},
+                                data = {'data': json.dumps(result_data)})
+
         except Exception as e:
-            print(response)
-# -------------------------
+            print('Err: ', e)
+            continue
+
+# -------------------------------------------------------------------------------------
 
 
 
 
-
-
-
-# ------------- Tests -----------------------------------------------------------------
+# --------------------------------- Тестовые методы -----------------------------------
 @app.get('/{protocol}/test_concurrency')
 async def test_concurrency(protocol: str = Path(...),
                             c: RESTClient | GRPCClient = Depends(get_client_by_protocol)):
@@ -265,6 +281,7 @@ async def test_concurrency(protocol: str = Path(...),
 
     start = time.time()
     results = await asyncio.gather(*tasks)
+    results = [json.loads(result) for result in results]
     total_time = time.time() - start
     
     return {
@@ -300,18 +317,19 @@ async def test_delete(db_c: DBClient = Depends(get_db_client)):
     result = await db_c._delete(model=Share, filters={'id__gte': 1})
     return result
 
-# -----------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------
 
 
-## методы для React
-## данные для запросов от React передаются в теле запроса body
+
+# ---------------------------- методы для React ---------------------------------------
+# данные для запросов от React передаются в теле запроса body
 async def send_request(c: RESTClient | GRPCClient, 
                     task: Task | None = None):
     try:
         response = await c.get_response(task)
-        return json.loads(response)
+        return response
     except Exception as e:
-        raise TypeError(get_error_by_code(703, e))
+        print(e)
 
 
 
@@ -321,7 +339,7 @@ async def send_stream_request(c: GRPCStreamClient,
         async for stream_data in c.get_response(task):
             yield stream_data
     except Exception as e:
-        yield get_error_by_code(703, e)
+        yield e
 
 
 

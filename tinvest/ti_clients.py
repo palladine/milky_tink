@@ -8,7 +8,6 @@ import grpc
 import httpx
 from google.protobuf.json_format import MessageToJson
 
-from .utils import async_timed
 from .ti_task import Task
 from .errors import get_error_by_code
 
@@ -50,8 +49,8 @@ class RESTClient(Client):
                     json=task.data)
                 return response.content.decode()
             except Exception as e:
-                raise TypeError(get_error_by_code(701, self.__class__.__name__, e))
-        raise AttributeError(get_error_by_code(702, self.__class__.__name__))
+                return(get_error_by_code(701, self, e))
+        return(get_error_by_code(702, self))
 
     async def close(self):
         await self.client.aclose()
@@ -106,9 +105,12 @@ class GRPCClient(Client):
                 response = await method(req, metadata=self.headers)
                 return MessageToJson(response, preserving_proto_field_name=False)
 
+            except (ModuleNotFoundError, AttributeError) as e:
+                return(get_error_by_code(706, self, e))
+            
             except Exception as e:
-                raise TypeError(get_error_by_code(701, self.__class__.__name__, e))
-        raise AttributeError(get_error_by_code(702, self.__class__.__name__))
+                return(get_error_by_code(701, self, e))
+        return(get_error_by_code(702, self))
     
 
 
@@ -116,7 +118,7 @@ class GRPCStreamClient(GRPCClient):
 
     async def get_response(self, task: Task | None) -> AsyncGenerator[str, None]:
         if not task:
-            yield get_error_by_code(702, self.__class__.__name__)
+            yield get_error_by_code(702, self)
             return
 
         try:
@@ -140,13 +142,18 @@ class GRPCStreamClient(GRPCClient):
                 if not res:
                     continue
                 yield res
-                await asyncio.sleep(3)
+                #await asyncio.sleep(3)
 
 
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as e:
+            yield get_error_by_code(705, self, e)
+            return
+
+        except (ModuleNotFoundError, AttributeError) as e:
+            yield get_error_by_code(706, self, e)
             return
 
         except Exception as e:
-            yield get_error_by_code(701, self.__class__.__name__, e)
+            yield get_error_by_code(701, self, e)
             return
 
